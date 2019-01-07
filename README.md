@@ -1,5 +1,11 @@
 # libdft: Practical Dynamic Data Flow Tracking
 
+Pin3.x support for libdft 32bit.
+
+Warning: It is not works and documented now. I implemented it for supporting Angora, but it is outdated and not suits for current version Angora.
+
+
+---------------------------
 ## Introduction
    Dynamic data flow tracking (DFT) deals with the tagging and tracking of
 "interesting" data as they propagate during program execution. DFT has been
