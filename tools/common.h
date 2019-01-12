@@ -1,4 +1,3 @@
-#include "../config.h"
 #include "pin.H"
 
 #include "branch_pred.h"
