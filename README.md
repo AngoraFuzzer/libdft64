@@ -1,5 +1,9 @@
 # libdft: Practical Dynamic Data Flow Tracking
 
+VUzze64 has implemented 64bit libdft, and it supports pin3.x now! and it supports more instructions!!!
+
+-----
+
 Pin3.x support for libdft 32bit.
 
 It can be compiled successfully now.
@@ -15,9 +19,10 @@ docker run  -v /path-to-dir:/data -it --rm libdft /bin/bash
 ```
 
 ## Plan
-- Support 64bit
+- Support 64bit.
 - Make the `tests` can be ran under pin3.x
-- Support more instruction
+- Support more instruction.
+
 
 ---------------------------
 ## Introduction
