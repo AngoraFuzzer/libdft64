@@ -14,6 +14,11 @@ docker build -t libdft ./
 docker run  -v /path-to-dir:/data -it --rm libdft /bin/bash
 ```
 
+## Plan
+- Support 64bit
+- Make the `tests` can be ran under pin3.x
+- Support more instruction
+
 ---------------------------
 ## Introduction
    Dynamic data flow tracking (DFT) deals with the tagging and tracking of

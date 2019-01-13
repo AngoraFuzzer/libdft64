@@ -54,9 +54,9 @@ int libdft_test_clr_addr(ADDRINT addr)
 {
 #ifdef USE_CUSTOM_TAG
     tag_t cleared_tag = tag_traits<tag_t>::cleared_val;
-    libdft_test_cmd_t cmd{TEST_CLR_TAG, TEST_ADDR, {addr: addr}, &cleared_tag};
+    libdft_test_cmd_t cmd = {TEST_CLR_TAG, TEST_ADDR, {addr: addr}, &cleared_tag};
 #else
-    libdft_test_cmd_t cmd{TEST_CLR_TAG, TEST_ADDR, {addr: addr}, 0};
+    libdft_test_cmd_t cmd =  {TEST_CLR_TAG, TEST_ADDR, {addr: addr}, 0};
 #endif
     if (do_cmd(&cmd) == -1 ) return -1;
 
@@ -71,9 +71,9 @@ int libdft_test_clr_reg(uint32_t reg)
 {
 #ifdef USE_CUSTOM_TAG
     tag_t cleared_tag = tag_traits<tag_t>::cleared_val;
-    libdft_test_cmd_t cmd{TEST_CLR_TAG, TEST_REG, {reg: reg}, &cleared_tag};
+    libdft_test_cmd_t cmd = {TEST_CLR_TAG, TEST_REG, {reg: reg}, &cleared_tag};
 #else
-    libdft_test_cmd_t cmd{TEST_CLR_TAG, TEST_REG, {reg: reg}, 0};
+    libdft_test_cmd_t cmd = {TEST_CLR_TAG, TEST_REG, {reg: reg}, 0};
 #endif
     if (do_cmd(&cmd) == -1 ) return -1;
 
@@ -86,7 +86,7 @@ int libdft_test_set_addr(ADDRINT addr, tag_t * tag)
 int libdft_test_set_addr(ADDRINT addr, uint8_t tag)
 #endif
 {
-    libdft_test_cmd_t cmd{TEST_SET_TAG, TEST_ADDR, {addr: addr}, tag};
+    libdft_test_cmd_t cmd = {TEST_SET_TAG, TEST_ADDR, {addr: addr}, tag};
     if (do_cmd(&cmd) == -1 ) return -1;
 
     return 0;
@@ -98,7 +98,7 @@ int libdft_test_set_reg(gpr_idx reg, tag_t * tag)
 int libdft_test_set_reg(uint32_t reg, uint8_t tag)
 #endif
 {
-    libdft_test_cmd_t cmd{TEST_SET_TAG, TEST_REG, {reg: reg}, tag};
+    libdft_test_cmd_t cmd = {TEST_SET_TAG, TEST_REG, {reg: reg}, tag};
     if (do_cmd(&cmd) == -1 ) return -1;
 
     return 0;
@@ -110,7 +110,7 @@ tag_t * libdft_test_get_addr(ADDRINT addr)
 uint8_t libdft_test_get_addr(ADDRINT addr)
 #endif
 {
-    libdft_test_cmd_t cmd{TEST_GET_TAG, TEST_ADDR, {addr: addr}, 0};
+    libdft_test_cmd_t cmd = {TEST_GET_TAG, TEST_ADDR, {addr: addr}, 0};
     int res = do_cmd(&cmd);
 
 #ifdef USE_CUSTOM_TAG
@@ -128,7 +128,7 @@ tag_t * libdft_test_get_reg(gpr_idx reg)
 uint8_t libdft_test_get_reg(uint32_t reg)
 #endif
 {
-    libdft_test_cmd_t cmd{TEST_GET_TAG, TEST_REG, {reg: reg}, 0};
+    libdft_test_cmd_t cmd = {TEST_GET_TAG, TEST_REG, {reg: reg}, 0};
     int res = do_cmd(&cmd);
 
 #ifdef USE_CUSTOM_TAG
@@ -146,7 +146,7 @@ int libdft_test_assert_addr(ADDRINT addr, tag_t * tag)
 int libdft_test_assert_addr(ADDRINT addr, uint8_t tag)
 #endif
 {
-    libdft_test_cmd_t cmd{TEST_ASSERT_TAG, TEST_ADDR, {addr: addr}, tag};
+    libdft_test_cmd_t cmd = {TEST_ASSERT_TAG, TEST_ADDR, {addr: addr}, tag};
     return do_cmd(&cmd);
 }
 
@@ -156,6 +156,6 @@ int libdft_test_assert_reg(gpr_idx reg, tag_t * tag)
 int libdft_test_assert_reg(uint32_t reg, uint8_t tag)
 #endif
 {
-    libdft_test_cmd_t cmd{TEST_ASSERT_TAG, TEST_REG, {reg: reg}, tag};
+    libdft_test_cmd_t cmd = {TEST_ASSERT_TAG, TEST_REG, {reg: reg}, tag};
     return do_cmd(&cmd);
 }

@@ -35,8 +35,8 @@
 #include <algorithm>
 #include <iterator>
 
-#include <config.h>
-#include <libdft_api.h>
+#include "config.h"
+#include "libdft_api.h"
 
 #include "libdft_test_api.h"
 #include "minunit.h"

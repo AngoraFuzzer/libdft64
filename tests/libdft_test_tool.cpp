@@ -55,6 +55,7 @@ int do_cmd_handler(libdft_test_cmd_t * cmd, thread_ctx_t * thread_ctx)
         return -1;
     }
     
+#ifdef USE_CUSTOM_TAG
     switch(cmd->type)
     {
         case TEST_CLR_TAG:
@@ -130,7 +131,8 @@ int do_cmd_handler(libdft_test_cmd_t * cmd, thread_ctx_t * thread_ctx)
             LOG("Received and ignored unknown command!\n");
             break;
     };
-
+#else
+#endif
     return 0;
 }
 

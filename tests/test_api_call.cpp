@@ -29,8 +29,8 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#include <config.h>
-#include <libdft_api.h>
+#include "config.h"
+#include "libdft_api.h"
 
 #include "libdft_test_api.h"
 #include "minunit.h"
@@ -63,8 +63,11 @@ const char * test_set_tag()
 #endif
     mu_assert(res == 0, "Failed to set a tag for address 0xDEADBEEF!");
     
+#ifdef USE_CUSTOM_TAG
     res = libdft_test_set_addr(0xDEADBEEF, NULL);
     mu_assert(res == -1, "Successfully set a NULL tag for address 0xDEADBEEF!");
+#else
+#endif
 
 #ifdef USE_CUSTOM_TAG
     res = libdft_test_set_reg({GPR_EAX, 0}, &set_tag);

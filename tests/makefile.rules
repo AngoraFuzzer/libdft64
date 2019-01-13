@@ -28,7 +28,7 @@ TEST_ROOTS :=
 
 # This defines the tools which will be run during the the tests, and were not already defined in
 # TEST_TOOL_ROOTS.
-TOOL_ROOTS := nullpin libdft libdft-dta
+TOOL_ROOTS := libdft_test_tool
 
 # This defines the static analysis tools which will be run during the the tests. They should not
 # be defined in TEST_TOOL_ROOTS. If a test with the same name exists, it should be defined in
@@ -39,20 +39,21 @@ TOOL_ROOTS := nullpin libdft libdft-dta
 SA_TOOL_ROOTS :=
 
 # This defines all the applications that will be run during the tests.
-APP_ROOTS := 
+APP_ROOTS := test_api_call test_set_tag test_custom_tag
 
 # This defines any additional object files that need to be compiled.
-OBJECT_ROOTS := 
+OBJECT_ROOTS :=  libdft_test_api
 
 # This defines any additional dlls (shared objects), other than the pintools, that need to be compiled.
-DLL_ROOTS :=
+DLL_ROOTS := 
 
 # This defines any static libraries (archives), that need to be built.
-LIB_ROOTS :=
+LIB_ROOTS := 
 
 LIBDFT_INC_PATH			= $(realpath ../src/)
 LOGGING_FLAGS = -DNO_PINTOOL_LOG
 TOOL_CXXFLAGS += $(LOGGING_FLAGS) $(LIBDFT_TAG_FLAGS) -I$(LIBDFT_INC_PATH)
+APP_CXXFLAGS += $(TOOL_CXXFLAGS) 
 
 ###### Place architecture-specific definitions here ######
 
@@ -68,6 +69,7 @@ ifeq ($(TARGET),ia32)
     LIB_ROOTS +=
     TOOL_CXXFLAGS += -m32 
     LIBDFT_PATH	= $(realpath ../src/obj-ia32/)
+    APP_CXXFLAGS += ./obj-ia32/libdft_test_api.o
 endif
 
 # Place intel64-specific definitions here if they apply to all supported operating systems.
@@ -132,6 +134,7 @@ SANITY_SUBSET := $(TEST_TOOL_ROOTS) $(TEST_ROOTS)
 ###### Special tools' build rules ######
 
 # placeholder for special tools' build rules
+
 
 ###### Special applications' build rules ######
 

@@ -29,8 +29,8 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-#include <config.h>
-#include <libdft_api.h>
+#include "config.h"
+#include "libdft_api.h"
 
 #include "libdft_test_api.h"
 #include "minunit.h"
