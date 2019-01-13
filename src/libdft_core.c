@@ -258,7 +258,7 @@ _movsx_r2r_oplb_l(thread_ctx_t *thread_ctx, uint32_t dst, uint32_t src)
 
 	/* update the destination (xfer) */
     for (size_t i = 0; i < 4; i++)
-            thread_ctx->vcpu.gpr[dst][0] = src_tag;
+            thread_ctx->vcpu.gpr[dst][i] = src_tag;
 #endif
 }
 

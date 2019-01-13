@@ -13,11 +13,11 @@
 #undef LIBDFT_TAG_TYPE
 #undef USE_CUSTOM_TAG
 #elif !defined(LIBDFT_TAG_TYPE)
-#define LIBDFT_TAG_TYPE libdft_tag_set_uint32
+#define LIBDFT_TAG_TYPE libdft_tag_uint8
 #endif
 
 #ifdef LIBDFT_TAG_TYPE
-#define USE_CUSTOM_TAG
+// #define USE_CUSTOM_TAG
 #include "tag_traits.h"
 
 // Currently available tag types:

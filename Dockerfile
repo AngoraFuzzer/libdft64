@@ -12,10 +12,11 @@ ENV PIN_ROOT=/${PIN_TAR_NAME}
 RUN wget http://software.intel.com/sites/landingpage/pintool/downloads/${PIN_TAR_NAME}.tar.gz \
     && tar xvf ${PIN_TAR_NAME}.tar.gz
 
-# RUN mkdir -p libdft
-# COPY . libdft
-# WORKDIR libdft
+RUN mkdir -p libdft
+COPY . libdft
+WORKDIR libdft
+RUN make
 
-VOLUME ["/pin_src"]
-# VOLUME ["/data"]
+#VOLUME ["/pin_src"]
+VOLUME ["/data"]
 WORKDIR /

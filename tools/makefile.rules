@@ -51,6 +51,8 @@ DLL_ROOTS :=
 LIB_ROOTS :=
 
 LIBDFT_INC_PATH			= $(realpath ../src/)
+LOGGING_FLAGS = -DNO_PINTOOL_LOG
+TOOL_CXXFLAGS += $(LOGGING_FLAGS) $(LIBDFT_TAG_FLAGS) -I$(LIBDFT_INC_PATH)
 
 ###### Place architecture-specific definitions here ######
 
@@ -64,7 +66,7 @@ ifeq ($(TARGET),ia32)
     OBJECT_ROOTS +=
     DLL_ROOTS +=
     LIB_ROOTS +=
-    TOOL_CXXFLAGS += -m32 $(LIBDFT_TAG_FLAGS) -I$(LIBDFT_INC_PATH)
+    TOOL_CXXFLAGS += -m32 
 endif
 
 # Place intel64-specific definitions here if they apply to all supported operating systems.
@@ -77,7 +79,7 @@ ifeq ($(TARGET),intel64)
     OBJECT_ROOTS +=
     DLL_ROOTS +=
     LIB_ROOTS += 
-	TOOL_CXXFLAGS += -m64 $(LIBDFT_TAG_FLAGS) -I$(LIBDFT_INC_PATH)
+	TOOL_CXXFLAGS += -m64
 endif
 
 ###### Place OS-specific definitions here ######

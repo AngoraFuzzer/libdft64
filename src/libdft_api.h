@@ -30,8 +30,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LIBDFT_API_H
-#define LIBDFT_API_H
+#ifndef __LIBDFT_API_H__
+#define __LIBDFT_API_H__
 
 #include <sys/syscall.h>
 #include <linux/version.h>
@@ -87,10 +87,10 @@ enum {						 /* {en,dis}able (ins_desc_t) */
 // NOTE: This uses the same mapping as the vcpu_ctx_t struct defined below!
 enum gpr {GPR_EDI, GPR_ESI, GPR_EBP, GPR_ESP, GPR_EBX, GPR_EDX, GPR_ECX, GPR_EAX, GPR_SCRATCH};
 
+#define XMM0_INDEX 45
 #ifdef USE_CUSTOM_TAG
 #define TAGS_PER_GPR 4
 #define TAGS_PER_XMM 16
-#define XMM0_INDEX 45
 // The gpr_reg_idx struct specifies an individual byte of a gpr reg.
 struct gpr_idx
 {
@@ -129,6 +129,7 @@ typedef struct {
   tag_t xmm[XMM_NUM + 1][TAGS_PER_XMM];
 #else
 	uint32_t gpr[GPR_NUM + 1];
+	uint32_t xmm[XMM_NUM + 1];
 #endif
 } vcpu_ctx_t;
 

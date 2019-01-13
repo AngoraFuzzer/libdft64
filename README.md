@@ -2,12 +2,16 @@
 
 Pin3.x support for libdft 32bit.
 
-Warning: It is not works and documented now. I implemented it for supporting Angora, but it is outdated and not suits for current version Angora.
+It can be compiled successfully now.
+
+Warning: I have not tested and documented now. 
+
+I implemented it for supporting Angora, but it is outdated and not suits for current version Angora.
 
 ## Docker
 ```
 docker build -t libdft ./
-docker run  -v ${PWD}:/pin_src -it --rm libdft /bin/bash
+docker run  -v /path-to-dir:/data -it --rm libdft /bin/bash
 ```
 
 ---------------------------

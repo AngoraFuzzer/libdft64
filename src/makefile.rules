@@ -146,8 +146,6 @@ stdin_track.test: $(OBJDIR)${TRACK_TOOL}$(PINTOOL_SUFFIX) $(OBJDIR)stdin_test$(E
 
 # placeholder for special tools' build rules
 LIBDFT_PATH			= $(realpath ../src)
-#LIBDFT_TAG_FLAGS	?= -DLIBDFT_TAG_TYPE=libdft_tag_set_uint32
-#LIBDFT_TAG_FLAGS	?= -DLIBDFT_TAG_TYPE=libdft_tag_range_list
 
 LOGGING_FLAGS = -DNO_PINTOOL_LOG
 
@@ -175,7 +173,6 @@ $(OBJDIR)tag_set$(OBJ_SUFFIX): tag_set.cpp tag_set.h
 
 A_ALL_OBJS = $(OBJDIR)libdft_api$(OBJ_SUFFIX) $(OBJDIR)libdft_core$(OBJ_SUFFIX) $(OBJDIR)syscall_desc$(OBJ_SUFFIX) $(OBJDIR)tagmap$(OBJ_SUFFIX) $(OBJDIR)tag_trait$(OBJ_SUFFIX) $(OBJDIR)tag_set$(OBJ_SUFFIX)
 A_ARFLAGS		= rcsv
-# A_LINK_OBJ = ../../tag_set/tag_set_m32.o
 
 $(OBJDIR)libdft$(LIB_SUFFIX): config.h $(ALL_OBJS)
 	$(AR) $(A_ARFLAGS) $(@) $(A_ALL_OBJS) $(A_LINK_OBJ)

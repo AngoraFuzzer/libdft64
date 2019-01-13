@@ -6,11 +6,10 @@ CXX=clang++
 
 LIBDFT_SRC			= src
 LIBDFT_TOOL			= tools
-# LIBDFT_TAG_FLAGS	?= -DLIBDFT_TAG_TYPE=libdft_tag_set_fdoff						# fdset offset tags
-# LIBDFT_TAG_FLAGS	?= -DLIBDFT_TAG_TYPE=libdft_tag_range_list
+LIBDFT_TAG_FLAGS	?= -DLIBDFT_TAG_TYPE=libdft_tag_uint8
 # LIBDFT_TAG_FLAGS	?= -DUSE_SET_TAG=1
 # LIBDFT_TAG_FLAGS	?= -DUSE_U8_TAG=1
-LIBDFT_TAG_FLAGS	?= -DUSE_TREE_TAG=1
+# LIBDFT_TAG_FLAGS	?= -DUSE_TREE_TAG=1
 
 
 .PHONY: all

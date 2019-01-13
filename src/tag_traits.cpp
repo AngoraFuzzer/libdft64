@@ -247,5 +247,3 @@ void tag_combine_inplace(TagNode* &lhs,
 template <> std::string tag_sprint(TagNode* const &tag) {
   return TagSet::toString(tag);
 }
-
-/* vim: set noet ts=4 sts=4 : */
