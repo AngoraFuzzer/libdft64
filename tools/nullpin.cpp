@@ -30,11 +30,12 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "pin.H"
+#include "branch_pred.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <iostream>
 
-#include "branch_pred.h"
-#include "pin.H"
 
 
 /*
@@ -68,6 +69,7 @@ trace_inspect(TRACE trace, VOID *v)
 	}
 }
 
+
 /*
  * NullPin
  *
@@ -80,22 +82,17 @@ main(int argc, char **argv)
 	PIN_InitSymbols();
 	
 	/* initialize PIN; optimized branch */
-	if (unlikely(PIN_Init(argc, argv)))
-		/* PIN initialization failed */
-		goto err;
-	
+	if (unlikely(PIN_Init(argc, argv))) {
+    std::cerr
+        << "Sth error in PIN_Init. Plz use the right command line options."
+        << std::endl;
+    return -1;
+  }
+
 	/* register trace_ins() to be called for every trace */
 	TRACE_AddInstrumentFunction(trace_inspect, NULL);
 	
-	/* start PIN */
 	PIN_StartProgram();
 
-	/* typically not reached; make the compiler happy */
-	return EXIT_SUCCESS;
-
-err:
-	/* error handling */
-
-	/* return */
-	return EXIT_FAILURE;
+	return 0;
 }

@@ -21,14 +21,14 @@
 # This defines tests which run tools of the same name.  This is simply for convenience to avoid
 # defining the test name twice (once in TOOL_ROOTS and again in TEST_ROOTS).
 # Tests defined here should not be defined in TOOL_ROOTS and TEST_ROOTS.
-TEST_TOOL_ROOTS := hybrid ins_disasm null # branch_count tracker null
+TEST_TOOL_ROOTS := 
 
 # This defines the tests to be run that were not already defined in TEST_TOOL_ROOTS.
-TEST_ROOTS :=
+TEST_ROOTS := 
 
 # This defines the tools which will be run during the the tests, and were not already defined in
 # TEST_TOOL_ROOTS.
-TOOL_ROOTS :=
+TOOL_ROOTS := nullpin libdft libdft-dta
 
 # This defines the static analysis tools which will be run during the the tests. They should not
 # be defined in TEST_TOOL_ROOTS. If a test with the same name exists, it should be defined in
@@ -39,16 +39,18 @@ TOOL_ROOTS :=
 SA_TOOL_ROOTS :=
 
 # This defines all the applications that will be run during the tests.
-APP_ROOTS := # basic_test read_test stdin_test
+APP_ROOTS := 
 
 # This defines any additional object files that need to be compiled.
-OBJECT_ROOTS := common hook
+OBJECT_ROOTS := 
 
 # This defines any additional dlls (shared objects), other than the pintools, that need to be compiled.
 DLL_ROOTS :=
 
 # This defines any static libraries (archives), that need to be built.
 LIB_ROOTS :=
+
+LIBDFT_INC_PATH			= $(realpath ../src/)
 
 ###### Place architecture-specific definitions here ######
 
@@ -62,7 +64,7 @@ ifeq ($(TARGET),ia32)
     OBJECT_ROOTS +=
     DLL_ROOTS +=
     LIB_ROOTS +=
-    TOOL_CXXFLAGS += -m32
+    TOOL_CXXFLAGS += -m32 $(LIBDFT_TAG_FLAGS) -I$(LIBDFT_INC_PATH)
 endif
 
 # Place intel64-specific definitions here if they apply to all supported operating systems.
@@ -74,7 +76,8 @@ ifeq ($(TARGET),intel64)
     APP_ROOTS +=
     OBJECT_ROOTS +=
     DLL_ROOTS +=
-    LIB_ROOTS +=
+    LIB_ROOTS += 
+	TOOL_CXXFLAGS += -m64 $(LIBDFT_TAG_FLAGS) -I$(LIBDFT_INC_PATH)
 endif
 
 ###### Place OS-specific definitions here ######
@@ -112,25 +115,6 @@ SANITY_SUBSET := $(TEST_TOOL_ROOTS) $(TEST_ROOTS)
 # This section contains recipes for tests other than the default.
 # See makefile.default.rules for the default test rules.
 # All tests in this section should adhere to the naming convention: <testname>.test
-TRACK_TOOL=tracker
-COUNT_TOOL=branch_count
-# export PIN_APP_LD_PRELOAD=../forkserver/forkserver_m32.so
-
-basic.test: $(OBJDIR)${COUNT_TOOL}$(PINTOOL_SUFFIX) $(OBJDIR)basic_test$(EXE_SUFFIX)
-	$(PIN) -injection child -t $< -- $(OBJDIR)basic_test$(EXE_SUFFIX)
-basic_track.test: $(OBJDIR)${TRACK_TOOL}$(PINTOOL_SUFFIX) $(OBJDIR)basic_test$(EXE_SUFFIX)
-	$(PIN) -injection child -t $< -- $(OBJDIR)basic_test$(EXE_SUFFIX)
-
-INPUT_FILE=.cur_input3
-read.test: $(OBJDIR)${COUNT_TOOL}$(PINTOOL_SUFFIX) $(OBJDIR)read_test$(EXE_SUFFIX)
-	$(PIN) -injection child -t $< -- $(OBJDIR)read_test$(EXE_SUFFIX) ${INPUT_FILE}
-read_track.test: $(OBJDIR)${TRACK_TOOL}$(PINTOOL_SUFFIX) $(OBJDIR)read_test$(EXE_SUFFIX)
-	$(PIN) -injection child -t $< -- $(OBJDIR)read_test$(EXE_SUFFIX) ${INPUT_FILE}
-
-stdin.test: $(OBJDIR)${COUNT_TOOL}$(PINTOOL_SUFFIX) $(OBJDIR)stdin_test$(EXE_SUFFIX)
-	$(PIN) -injection child -t $< -- $(OBJDIR)stdin_test$(EXE_SUFFIX) < ${INPUT_FILE}
-stdin_track.test: $(OBJDIR)${TRACK_TOOL}$(PINTOOL_SUFFIX) $(OBJDIR)stdin_test$(EXE_SUFFIX)
-	$(PIN) -injection child -t $< -- $(OBJDIR)stdin_test$(EXE_SUFFIX) < ${INPUT_FILE}
 
 
 ##############################################################
@@ -145,63 +129,16 @@ stdin_track.test: $(OBJDIR)${TRACK_TOOL}$(PINTOOL_SUFFIX) $(OBJDIR)stdin_test$(E
 ###### Special tools' build rules ######
 
 # placeholder for special tools' build rules
-#LIBDFT_TAG_FLAGS	?= -DLIBDFT_TAG_TYPE=libdft_tag_set_uint32
-#LIBDFT_TAG_FLAGS	?= -DLIBDFT_TAG_TYPE=libdft_tag_range_list
-
-LOGGING_FLAGS = -DNO_PINTOOL_LOG
 
 # check need for cross-compile.
-#ifeq ($(findstring "x86_64", $(ARCH)),)
-#TOOL_CXXFLAGS += -m32
-#endif
-
-LIBDFT_INC_PATH			= $(realpath ../src/)
-TOOL_CXXFLAGS += $(LOGGING_FLAGS) $(LIBDFT_TAG_FLAGS) -I$(LIBDFT_INC_PATH)
-
-LIBDFT_INC_PATH			= $(realpath ../src/)
 ifeq ($(TARGET),ia32)
 
 LIBDFT_PATH			= $(realpath ../src/obj-ia32/)
-
-$(OBJDIR)tracker$(OBJ_SUFFIX): tracker.cpp 
-	$(CXX) $(TOOL_CXXFLAGS) $(DFTFLAGS) $(COMP_OBJ)$@ $<
-
-$(OBJDIR)tracker$(PINTOOL_SUFFIX): $(OBJDIR)tracker$(OBJ_SUFFIX)
-	$(LINKER) $(TOOL_LDFLAGS) $(DFTFLAGS) $(LINK_EXE)$@ $(^:%.h=) $(TOOL_LPATHS) -L$(LIBDFT_PATH) -ldft $(TOOL_LIBS)
-
-$(OBJDIR)common$(OBJ_SUFFIX): common.cpp 
-	$(CXX) $(TOOL_CXXFLAGS) $(DFTFLAGS) $(COMP_OBJ)$@ $<
-
-$(OBJDIR)hook$(OBJ_SUFFIX): hook.cpp 
-	$(CXX) $(TOOL_CXXFLAGS) $(DFTFLAGS) $(COMP_OBJ)$@ $<
-
-$(OBJDIR)hybrid$(OBJ_SUFFIX): hybrid.cpp
-	$(CXX) $(TOOL_CXXFLAGS) $(DFTFLAGS) $(COMP_OBJ)$@ $<
-
-$(OBJDIR)hybrid$(PINTOOL_SUFFIX): $(OBJDIR)hybrid$(OBJ_SUFFIX) $(OBJDIR)common$(OBJ_SUFFIX) $(OBJDIR)hook$(OBJ_SUFFIX)
-	$(LINKER) $(TOOL_LDFLAGS) $(DFTFLAGS) $(LINK_EXE)$@ $(^:%.h=) $(TOOL_LPATHS) -L$(LIBDFT_PATH) -ldft $(TOOL_LIBS)
 
 endif
 
 ifeq ($(TARGET),intel64)
 
-$(OBJDIR)tracker$(OBJ_SUFFIX): tracker.cpp
-	@echo "do nothing"
-
-$(OBJDIR)tracker$(PINTOOL_SUFFIX): $(OBJDIR)tracker$(OBJ_SUFFIX)
-	@echo "do nothing, too"
-
-$(OBJDIR)hybrid$(OBJ_SUFFIX): hybrid.cpp
-	@echo "do nothing"
-
-$(OBJDIR)hybrid$(PINTOOL_SUFFIX): $(OBJDIR)hybrid$(OBJ_SUFFIX)
-	@echo "do nothing, too"
-
-$(OBJDIR)common$(OBJ_SUFFIX): common.cpp
-	@echo "do nothing, too"
-
-$(OBJDIR)hook$(OBJ_SUFFIX): hook.cpp
-	@echo "do nothing, too"
 
 endif
 

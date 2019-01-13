@@ -33,8 +33,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "branch_pred.h"
-#include "libdft_api.h"
+#include "../src/branch_pred.h"
+#include "../src/libdft_api.h"
 #include "syscall_desc.h"
 #include "pin.H"
 

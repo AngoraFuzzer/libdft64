@@ -40,10 +40,10 @@
 #include <errno.h>
 #include <sys/socket.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-
+#include <stdlib.h>
 #include <set>
+#include <unistd.h>
 
 #include "branch_pred.h"
 #include "libdft_api.h"

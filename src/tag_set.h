@@ -8,7 +8,6 @@
 #include <algorithm>
 #include <string>
 #include <stdint.h>
-#include "../config.h"
 #ifndef TAG_OFF
 #define TAG_OFF
 //typedef uint32_t tag_off_val;
