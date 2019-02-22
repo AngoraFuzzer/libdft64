@@ -1,0 +1,28 @@
+libdft has been modified to support tags of arbitrary type. Currently,
+the size of the tag is one byte per memory byte. The tag type is defined
+in tagmap.h by the macro TAG_TYPE. Currently, the type of the tag is
+defined as uint8_t.
+
+The functions for interacting with the memort tagmap are in tagmap.c.
+The function that combines two tags is called 'ct' and is located in
+libdft_core.c. Currently, the ct function does an 'or' between two tags.
+
+An example on how to use the modified libdft is in tools/libdft-dta.c.
+There, the taint sources are read (tag value 1), recv(tag value 2), 
+recvfrom(tag value 4), recvmsg(tag value 8). The tainting can be done
+anywhere, and the taint sources are not restricted to system calls.  
+
+
+How to implement more complex operations:
+
+1. Change the type of the tag (possibly to a pointer type).
+2. Modify the ct function (located in libdft_core.c) to reflect
+the new tag type.
+3. Memory is not deallocated by the tagmap functions or by the
+libdtf_core ones. The easiest way to use complex data types
+is to create a smart pointer class that does the deallocation and
+to set the tag type to the smart pointer type.
+
+Please send questions/comments/suggestions to silviu.baranga@gmail.com.
+Have a nice day!
+

@@ -1,0 +1,39 @@
+Installation Instructions
+*************************
+
+Copyright (C) 2010 Columbia University.
+
+   Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.  This file is offered as-is,
+without warranty of any kind.
+
+
+Installation
+============
+
+   The simplest way to compile this package is:
+
+  1. Extract the latest Pin build. Assuming that it was extracted in
+     `/usr/src/pin', we shall refer to that path as Pin's root path
+      from now on
+
+  2. Type `export PIN_HOME=/usr/src/pin' to set the environment
+     variable PIN_HOME to the root path of Pin. Replace `/usr/src/pin'
+     with *your* root path
+  
+  3. `cd' to the directory containing the package's source code and type
+     `make' to compile the package (i.e., the libdft library)
+
+  4. Type `make tools' to compile the accompanying tools (e.g., nullpin,
+     libdft, libdft-dta, etc.)
+
+  5. You can remove the program binaries and object files from the
+     source code directory by typing `make clean' and `make tools_clean'
+
+
+Compilers and Options
+=====================
+
+   Tested with gcc/g++ 4.4.x on Debian GNU/Linux v5 (lenny) and Ubuntu
+v10.04.1 LTS (Lucid Lynx).
