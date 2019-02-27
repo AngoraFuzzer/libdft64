@@ -33,14 +33,14 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include <err.h>
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "tagmap.h"
-#include "pin.H"
 #include "branch_pred.h"
+#include "pin.H"
+#include "tagmap.h"
 
 /*
  * tagmap
@@ -53,101 +53,82 @@
  * Every byte that is addressable in the 32-bit virtual address
  * space is represented using one bit on the tagmap.
  */
-//uint8_t *bitmap = NULL;
-//TAG_TYPE ***directory = NULL;
+// uint8_t *bitmap = NULL;
+// TAG_TYPE ***directory = NULL;
 
 /* For File taint */
 tag_dir_t tag_dir;
-const EWAHBoolArray<uint32_t> tag_traits<EWAHBoolArray<uint32_t>>::cleared_val = EWAHBoolArray<uint32_t>{};
-const EWAHBoolArray<uint32_t> tag_traits<EWAHBoolArray<uint32_t>>::set_val = EWAHBoolArray<uint32_t>{};
+// const unsigned char tag_traits<unsigned char>::cleared_val = 0;
+// const unsigned char tag_traits<unsigned char>::set_val = 1;
 
-template<>
-EWAHBoolArray<uint32_t> tag_combine(EWAHBoolArray<uint32_t> & lhs, EWAHBoolArray<uint32_t> & rhs) {
-	EWAHBoolArray<uint32_t> result;
-	lhs.logicalor(rhs, result);
-	return result;
+template <>
+unsigned char tag_combine(unsigned char const &lhs, unsigned char const &rhs) {
+  return lhs | rhs;
 }
 
-template<>
-std::string tag_sprint(EWAHBoolArray<uint32_t> const & tag) {
-    std::stringstream ss;
-    if(tag.numberOfOnes())
-    	ss << tag;
-    else
-	return "{}";
-    return ss.str();
-
+template <> std::string tag_sprint(unsigned char const &tag) {
+  std::stringstream ss;
+  ss << tag;
+  return ss.str();
 }
 
-template<>
-bool tag_count(EWAHBoolArray<uint32_t> const & tag) {
-	if(tag.numberOfOnes()){
-		return 1;
-	}else{
-		return 0;
-	}
-}
+template <> bool tag_count(unsigned char const &tag) { return tag > 0; }
 
 /*
  * initialize the tagmap; allocate space
  *
- * returns:	0 on success, 1 on error 
+ * returns:	0 on success, 1 on error
  */
-int
-tagmap_alloc(void)
-{
-	/*
-	 * allocate space for the bitmap;
-	 * in GNU/Linux this will result in invoking mmap(2)
-	 * since the requested size is greater than 128 KB
-	 */
+int tagmap_alloc(void) {
+  /*
+   * allocate space for the bitmap;
+   * in GNU/Linux this will result in invoking mmap(2)
+   * since the requested size is greater than 128 KB
+   */
 
-	//MODIFIED: allocate space for the directory structure
-/*	if (unlikely((directory = (TAG_TYPE ***)calloc(TOP_DIR_SZ,sizeof(TAG_TYPE **))) == NULL))
-		return 1;
-	//initialize structure
-	memset(directory, 0, TOP_DIR_SZ * sizeof(TAG_TYPE **));*/
+  // MODIFIED: allocate space for the directory structure
+  /*	if (unlikely((directory = (TAG_TYPE
+     ***)calloc(TOP_DIR_SZ,sizeof(TAG_TYPE **))) == NULL)) return 1;
+          //initialize structure
+          memset(directory, 0, TOP_DIR_SZ * sizeof(TAG_TYPE **));*/
 
-	/* return with success */
-	return 0;
+  /* return with success */
+  return 0;
 }
 
 /*
  * dispose the tagmap; deallocate its space
  */
-void
-tagmap_free(void)
-{
-	/* deallocate the bitmap space */
-/*	unsigned int i;
-	for (i=0; i<TOP_DIR_SZ; i++)
-		if (directory[i])
-			free(directory[i]);
-	free(directory);*/
+void tagmap_free(void) {
+  /* deallocate the bitmap space */
+  /*	unsigned int i;
+          for (i=0; i<TOP_DIR_SZ; i++)
+                  if (directory[i])
+                          free(directory[i]);
+          free(directory);*/
 }
 
-void 
-alloc_pagetable(ADDRINT addr)
-{
-/*	if (!directory[VIRT2PAGETABLE(addr)]){
-		if (unlikely((directory[VIRT2PAGETABLE(addr)] = (TAG_TYPE **)calloc(PAGETABLE_SZ,sizeof(TAG_TYPE*)))==NULL)){
-			warn("%s:%u, ,malloc failed %lx", __func__, __LINE__,addr);
-			exit(1);
-		}
-		memset(directory[VIRT2PAGETABLE(addr)], 0, PAGETABLE_SZ * sizeof(TAG_TYPE*));
-	}*/
+void alloc_pagetable(ADDRINT addr) {
+  /*	if (!directory[VIRT2PAGETABLE(addr)]){
+                  if (unlikely((directory[VIRT2PAGETABLE(addr)] = (TAG_TYPE
+     **)calloc(PAGETABLE_SZ,sizeof(TAG_TYPE*)))==NULL)){ warn("%s:%u, ,malloc
+     failed %lx", __func__, __LINE__,addr); exit(1);
+                  }
+                  memset(directory[VIRT2PAGETABLE(addr)], 0, PAGETABLE_SZ *
+     sizeof(TAG_TYPE*));
+          }*/
 }
 
-void inline static alloc_tag_page(ADDRINT addr)
-{
-/*	alloc_pagetable(addr);
-	if (!directory[VIRT2PAGETABLE(addr)][VIRT2PAGE(addr)]){
-		if (unlikely((directory[VIRT2PAGETABLE(addr)][VIRT2PAGE(addr)] = (TAG_TYPE *)calloc(PAGE_SIZE,sizeof(TAG_TYPE)))==NULL)){
-			warn("%s:%u, ,malloc failed %lx", __func__, __LINE__,addr);
-			exit(1);
-		}
-		memset(directory[VIRT2PAGETABLE(addr)][VIRT2PAGE(addr)], 0, PAGE_SIZE * sizeof(TAG_TYPE));
-	}*/
+void inline static alloc_tag_page(ADDRINT addr) {
+  /*	alloc_pagetable(addr);
+          if (!directory[VIRT2PAGETABLE(addr)][VIRT2PAGE(addr)]){
+                  if (unlikely((directory[VIRT2PAGETABLE(addr)][VIRT2PAGE(addr)]
+     = (TAG_TYPE *)calloc(PAGE_SIZE,sizeof(TAG_TYPE)))==NULL)){ warn("%s:%u,
+     ,malloc failed %lx", __func__, __LINE__,addr); exit(1);
+                  }
+                  memset(directory[VIRT2PAGETABLE(addr)][VIRT2PAGE(addr)], 0,
+     PAGE_SIZE * sizeof(TAG_TYPE));
+          }*/
 }
 
 /*
@@ -158,50 +139,45 @@ void inline static alloc_tag_page(ADDRINT addr)
  * returns: 0 means no tag, other means tagged
  */
 
-/* 
-	Below defined functions are for 
-	taint spread from file
+/*
+        Below defined functions are for
+        taint spread from file
 */
 /*
-	Set taint at addr
+        Set taint at addr
 */
-void PIN_FAST_ANALYSIS_CALL
-tagmap_setb_with_tag(size_t addr, tag_t const & tag)
-{
-    tag_dir_setb(tag_dir, addr, tag);
+void PIN_FAST_ANALYSIS_CALL tagmap_setb_with_tag(size_t addr,
+                                                 tag_t const &tag) {
+  tag_dir_setb(tag_dir, addr, tag);
 }
 
 /*
-	Clear taint at addr
+        Clear taint at addr
 */
-void PIN_FAST_ANALYSIS_CALL
-file_tagmap_clrb(ADDRINT addr){
-	tagmap_setb_with_tag(addr, tag_traits<tag_t>::cleared_val);
+void PIN_FAST_ANALYSIS_CALL file_tagmap_clrb(ADDRINT addr) {
+  tagmap_setb_with_tag(addr, tag_traits<tag_t>::cleared_val);
 }
 
-/* 
-	Clean n taint starting from addr
+/*
+        Clean n taint starting from addr
 */
-void PIN_FAST_ANALYSIS_CALL
-file_tagmap_clrn(ADDRINT addr, UINT32 n){
-	//LOG(StringFromAddrint(addr) + "  " + decstr(n) + "\n");
-	ADDRINT i;
-	for(i=addr;i<addr+n;i++){
-	//	LOG(StringFromAddrint(i) + "  ");
-		file_tagmap_clrb(i);
-	}
-	//LOG("\n");
+void PIN_FAST_ANALYSIS_CALL file_tagmap_clrn(ADDRINT addr, UINT32 n) {
+  // LOG(StringFromAddrint(addr) + "  " + decstr(n) + "\n");
+  ADDRINT i;
+  for (i = addr; i < addr + n; i++) {
+    //	LOG(StringFromAddrint(i) + "  ");
+    file_tagmap_clrb(i);
+  }
+  // LOG("\n");
 }
 
-/* 
-	Get taint at addr
+/*
+        Get taint at addr
 */
-tag_t file_tagmap_getb(ADDRINT addr){
-	return tag_dir_getb(tag_dir, addr);
-}
+tag_t file_tagmap_getb(ADDRINT addr) { return tag_dir_getb(tag_dir, addr); }
 
-bool file_tag_testb(ADDRINT addr){
-        if (addr > 0x7fffffffffff)
-                return 0;
-        return 1;
+bool file_tag_testb(ADDRINT addr) {
+  if (addr > 0x7fffffffffff)
+    return 0;
+  return 1;
 }

@@ -76,13 +76,11 @@ LIB_ROOTS :=
 # Special builds for libdft-dta
 
 TOOL_CXXFLAGS	+= -std=c++11 -mpopcnt -fno-builtin
-# LIBS		+= -lpin  -lxed -ldwarf -lelf -ldl -lcrypto -lssl# -liberty
-
 OBJS          	= libdft_api libdft_core osutils syscall_desc tagmap
 TOOLS_DIR	= tools/
-
-$(OBJDIR)libdft-dta$(PINTOOL_SUFFIX): $(TOOLS_DIR)libdft-dta$(OBJ_SUFFIX) $(OBJS:%=$(OBJDIR)%$(OBJ_SUFFIX))
+# $(TOOLS_DIR)libdft-dta$(OBJ_SUFFIX)
+$(OBJDIR)libdft-dta$(PINTOOL_SUFFIX):  $(OBJS:%=$(OBJDIR)%$(OBJ_SUFFIX))
 	$(LINKER) $(TOOL_LDFLAGS) $(LINK_EXE)$@ $^ $(TOOL_LPATHS) $(TOOL_LIBS)
-	$(CP) $(OBJDIR)libdft-dta$(PINTOOL_SUFFIX) $(TOOLS_DIR)libdft-dta$(PINTOOL_SUFFIX)
+	# $(CP) $(OBJDIR)libdft-dta$(PINTOOL_SUFFIX) $(TOOLS_DIR)libdft-dta$(PINTOOL_SUFFIX)
 $(TOOLS_DIR)libdft-dta$(OBJ_SUFFIX): $(TOOLS_DIR)libdft-dta.cpp branch_pred.h
 	$(CXX) $(TOOL_CXXFLAGS) -I. $(COMP_OBJ)$@ $<
