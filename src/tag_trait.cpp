@@ -13,4 +13,11 @@ template <> std::string tag_sprint(unsigned char const &tag) {
   return ss.str();
 }
 
-template <> bool tag_count(unsigned char const &tag) { return tag > 0; }
+TagNode *tag_traits<TagNode *>::cleared_val = NULL;
+template <> TagNode *tag_combine(TagNode *const &lhs, TagNode *const &rhs) {
+  return TagSet::combine(lhs, rhs);
+}
+
+template <> std::string tag_sprint(TagNode *const &tag) {
+  return TagSet::toString(tag);
+}

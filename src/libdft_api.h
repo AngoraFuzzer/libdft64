@@ -210,9 +210,4 @@ size_t REG32_INDX(REG);
 size_t REG16_INDX(REG);
 size_t REG8_INDX(REG);
 
-/* dump API */
-// void write_stack_array(ADDRINT, ADDRINT, ARRAY_SET_T* );
-// void write_heap_array(heap_desc_t*, ADDRINT, ARRAY_SET_T*);
-// img_ctx_t* locate_img(ADDRINT);
-
 #endif /* __LIBDFT_API_H__ */
