@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2010, 2011, 2012, 2013, Columbia University
+ * Copyright (c) 2010, Columbia University
  * All rights reserved.
  *
  * This software was developed by Vasileios P. Kemerlis <vpk@cs.columbia.edu>
@@ -30,8 +30,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LIBDFT_SYSCALL_DESC_H
-#define LIBDFT_SYSCALL_DESC_H
+#ifndef __SYSCALL_DESC_H__
+#define __SYSCALL_DESC_H__
 
 #include <sys/resource.h>
 #include <sys/sysinfo.h>
@@ -40,14 +40,14 @@
 #include <sys/timex.h>
 #include <sys/types.h>
 #include <sys/vfs.h>
-//#include <sys/vm86.h>
-#include<asm/vm86.h>
 
 #include <asm/ldt.h>
 #include <asm/posix_types.h>
+#include <sys/stat.h>
 #include <linux/aio_abi.h>
 #include <linux/futex.h>
 #include <linux/mqueue.h>
+#include <linux/perf_event.h>
 #include <linux/utsname.h>
 
 #include <signal.h>
@@ -55,14 +55,22 @@
 
 #include "libdft_api.h"
 #include "branch_pred.h"
+#include "tagmap.h"
 
-#if LINUX_VERSION_CODE == KERNEL_VERSION(2,6,31)
-#include <linux/perf_counter.h>
-#elif LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,32)
-#include <linux/perf_event.h>
+
+#ifndef STDIN
+	#define STDIN 0
 #endif
 
-/* 
+#ifndef STDOUT
+	#define STDOUT 1
+#endif
+
+#ifndef STDERR
+	#define STDERR 2
+#endif
+
+/*
  * definition of old_*, linux_*, and OS-specific types
  *
  * this might break in the future; keep it up2date
@@ -173,16 +181,6 @@ struct fs_disk_quota {
 	char	d_padding4[8];
 };
 
-//FIXME:
-//#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39) && !defined(_FCNTL_H)
-struct file_handle {
-	__u32		handle_bytes;
-	int 		handle_type;
-	/* file identifier */
-	unsigned char	f_handle[0];
-};
-//#endif
-
 #define SEMCTL	3
 #define MSGRCV	12
 #define MSGCTL	14
@@ -190,15 +188,43 @@ struct file_handle {
 
 #define IPC_FIX	256
 
-// FIXME:
-/*
-union semun {
-	int		val;
-	struct semid_ds	*buf;
-	unsigned short	*array;
-	struct seminfo	*__buf;
+struct sched_attr {
+	__u32 size;
+
+	__u32 sched_policy;
+	__u64 sched_flags;
+
+	/* SCHED_NORMAL, SCHED_BATCH */
+	__s32 sched_nice;
+
+	/* SCHED_FIFO, SCHED_RR */
+	__u32 sched_priority;
+
+	/* SCHED_DEADLINE (nsec) */
+	__u64 sched_runtime;
+	__u64 sched_deadline;
+	__u64 sched_period;
+ };
+
+/*struct msgbuf {
+    long mtype;
+    char mtext[1];
+};*/
+
+struct file_handle {
+	unsigned int  handle_bytes;   /* Size of f_handle [in, out] */
+	int           handle_type;    /* Handle type [out] */
+	unsigned char f_handle[0];    /* File identifier (sized by caller) [out] */
 };
-*/
+
+typedef __u32 u32;
+typedef __u64 git_t;
+
+/*struct mmsghdr {
+	struct msghdr msg_hdr;
+	unsigned int  msg_len;
+};*/
+
 
 #define SYS_ACCEPT	5
 #define SYS_GETSOCKNAME	6
@@ -209,27 +235,27 @@ union semun {
 #define SYS_GETSOCKOPT	15
 #define SYS_RECVMSG	17
 #define SYS_ACCEPT4	18
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,33)
 #define SYS_RECVMMSG	19
-#endif
 
 /* page size in bytes */
 #define PAGE_SZ		4096
 
+
 /* system call descriptor */
 typedef struct {
-	size_t	nargs;				/* number of arguments */
-	size_t	save_args;			/* flag; save arguments */
-	size_t	retval_args;		/* flag; returns value in arguments */
-	size_t	map_args[SYSCALL_ARG_NUM];	/* arguments map */
-	void	(* pre)(syscall_ctx_t*);	/* pre-syscall callback */
-	void 	(* post)(syscall_ctx_t*);	/* post-syscall callback */
+	size_t nargs;			/* number of arguments */
+	size_t save_args;		/* flag; save arguments */
+	size_t retval_args;		/* flag; returns value in arguments */
+	size_t map_args[SYSCALL_ARG_NUM];	/* arguments map */
+	void (* pre)(THREADID,syscall_ctx_t*);	/* pre-syscall callback */
+	void (* post)(THREADID,syscall_ctx_t*);	/* post-syscall callback */
 } syscall_desc_t;
 
-/* syscall API */
-int	syscall_set_pre(syscall_desc_t*, void (*)(syscall_ctx_t*));
-int	syscall_clr_pre(syscall_desc_t*);
-int	syscall_set_post(syscall_desc_t*, void (*)(syscall_ctx_t*));
-int	syscall_clr_post(syscall_desc_t*);
 
-#endif /* LIBDFT_SYSCALL_DESC_H */
+/* syscall API */
+int syscall_set_pre(syscall_desc_t*, void (*)(THREADID,syscall_ctx_t*));
+int syscall_clr_pre(syscall_desc_t*);
+int syscall_set_post(syscall_desc_t*, void (*)(THREADID,syscall_ctx_t*));
+int syscall_clr_post(syscall_desc_t*);
+
+#endif /* __SYSCALL_DESC_H__ */

@@ -4,7 +4,8 @@
 #
 ##############################################################
 
-TARGET ?= intel64
+# FIXME: Only support ia32 now
+TARGET ?= ia32
 
 # If the tool is built out of the kit, PIN_ROOT must be specified in the make invocation and point to the kit root.
 ifdef PIN_ROOT

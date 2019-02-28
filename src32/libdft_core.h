@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2010, Columbia University
+ * Copyright (c) 2010, 2011, 2012, 2013, Columbia University
  * All rights reserved.
  *
  * This software was developed by Vasileios P. Kemerlis <vpk@cs.columbia.edu>
@@ -30,11 +30,30 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __BRANCH_PRED_H__
-#define __BRANCH_PRED_H__
+#ifndef LIBDFT_CORE_H
+#define LIBDFT_CORE_H
 
-/* compiler directives for branch prediction */
-#define likely(x)       __builtin_expect((x), 1)
-#define unlikely(x)     __builtin_expect((x), 0)
+#define VCPU_MASK32	0x0F			/* 32-bit VCPU mask */
+#define VCPU_MASK16	0x03			/* 16-bit VCPU mask */
+#define VCPU_MASK8	0x01			/* 8-bit VCPU mask */
+#define MEM_LONG_LEN	32			/* long size (32-bit) */
+#define MEM_WORD_LEN	16			/* word size (16-bit) */
+#define MEM_BYTE_LEN	8			/* byte size (8-bit) */
+#define BIT2BYTE(len)	((len) >> 3)		/* scale change; macro */
 
-#endif /* __BRANCH_PRED_H__ */
+/* extract the EFLAGS.DF bit by applying the corresponding mask */
+#define EFLAGS_DF(eflags)	((eflags & 0x0400))
+
+enum {
+/* #define */ OP_0 = 0,			/* 0th (1st) operand index */
+/* #define */ OP_1 = 1,			/* 1st (2nd) operand index */
+/* #define */ OP_2 = 2,			/* 2nd (3rd) operand index */
+/* #define */ OP_3 = 3,			/* 3rd (4th) operand index */
+/* #define */ OP_4 = 4			/* 4rd (5th) operand index */
+};
+
+
+/* core API */
+void ins_inspect(INS);
+
+#endif /* LIBDFT_CORE_H */

@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2010, 2011, 2012, 2013, Columbia University
+ * Copyright (c) 2010, Columbia University
  * All rights reserved.
  *
  * This software was developed by Vasileios P. Kemerlis <vpk@cs.columbia.edu>
@@ -30,30 +30,39 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LIBDFT_CORE_H
-#define LIBDFT_CORE_H
+#ifndef __LIBDFT_CORE_H__
+#define __LIBDFT_CORE_H__
 
+#define OP_0		0			/* 0th (1st) operand index */
+#define OP_1		1			/* 1st (2nd) operand index */
+#define OP_2		2			/* 2nd (3rd) operand index */
+#define OP_3		3			/* 3rd (4th) operand index */
+#define OP_4		4			/* 4th (5th) operand index */
+#define R32_ALIGN	12			/* alignment offset for 
+						   mapping 32-bit PIN registers
+						   to VCPU registers */
 #define VCPU_MASK32	0x0F			/* 32-bit VCPU mask */
 #define VCPU_MASK16	0x03			/* 16-bit VCPU mask */
 #define VCPU_MASK8	0x01			/* 8-bit VCPU mask */
+#define MEM_64BIT_LEN   64
 #define MEM_LONG_LEN	32			/* long size (32-bit) */
 #define MEM_WORD_LEN	16			/* word size (16-bit) */
 #define MEM_BYTE_LEN	8			/* byte size (8-bit) */
 #define BIT2BYTE(len)	((len) >> 3)		/* scale change; macro */
+#define MAX_32BIT_VALUE 0xffffffff
+#define MAX_64BIT_VALUE 0xffffffffffffffff
 
-/* extract the EFLAGS.DF bit by applying the corresponding mask */
 #define EFLAGS_DF(eflags)	((eflags & 0x0400))
-
-enum {
-/* #define */ OP_0 = 0,			/* 0th (1st) operand index */
-/* #define */ OP_1 = 1,			/* 1st (2nd) operand index */
-/* #define */ OP_2 = 2,			/* 2nd (3rd) operand index */
-/* #define */ OP_3 = 3,			/* 3rd (4th) operand index */
-/* #define */ OP_4 = 4			/* 4rd (5th) operand index */
-};
-
-
 /* core API */
 void ins_inspect(INS);
+//FLAG_TYPE ct(TAG_TYPE, TAG_TYPE);
 
-#endif /* LIBDFT_CORE_H */
+/* REG INDEX API*/
+size_t REG_INDX(REG);
+REG VCPU_INDX(size_t);
+
+#define DEBUG
+
+#endif /* __LIBDFT_CORE_H__ */
+
+

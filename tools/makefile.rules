@@ -28,7 +28,7 @@ TEST_ROOTS :=
 
 # This defines the tools which will be run during the the tests, and were not already defined in
 # TEST_TOOL_ROOTS.
-TOOL_ROOTS := nullpin libdft libdft-dta
+TOOL_ROOTS := nullpin libdft #libdft-dta
 
 # This defines the static analysis tools which will be run during the the tests. They should not
 # be defined in TEST_TOOL_ROOTS. If a test with the same name exists, it should be defined in
@@ -50,10 +50,6 @@ DLL_ROOTS :=
 # This defines any static libraries (archives), that need to be built.
 LIB_ROOTS :=
 
-LIBDFT_INC_PATH			= $(realpath ../src/)
-LOGGING_FLAGS = -DNO_PINTOOL_LOG
-TOOL_CXXFLAGS += $(LOGGING_FLAGS) $(LIBDFT_TAG_FLAGS) -I$(LIBDFT_INC_PATH)
-
 ###### Place architecture-specific definitions here ######
 
 # Place ia32-specific definitions here if they apply to all supported operating systems.
@@ -67,7 +63,8 @@ ifeq ($(TARGET),ia32)
     DLL_ROOTS +=
     LIB_ROOTS +=
     TOOL_CXXFLAGS += -m32 
-    LIBDFT_PATH	= $(realpath ../src/obj-ia32/)
+    LIBDFT_INC_PATH	= $(realpath ../src32/)
+    LIBDFT_PATH	= $(realpath ../src32/obj-ia32/)
 endif
 
 # Place intel64-specific definitions here if they apply to all supported operating systems.
@@ -80,32 +77,10 @@ ifeq ($(TARGET),intel64)
     OBJECT_ROOTS +=
     DLL_ROOTS +=
     LIB_ROOTS += 
-	TOOL_CXXFLAGS += -m64
+	TOOL_CXXFLAGS +=
+    LIBDFT_INC_PATH	= $(realpath ../src/)
+    LIBDFT_PATH	= $(realpath ../src/obj-intel64/)
 endif
-
-###### Place OS-specific definitions here ######
-# Linux
-ifeq ($(TARGET_OS),linux)
-endif
-
-# Mac
-ifeq ($(TARGET_OS),mac)
-endif
-
-# Windows
-ifeq ($(TARGET_OS),windows)
-endif
-
-###### Handle exceptions here ######
-
-# If some tests need to be disabled, do this here
-
-###### Define the sanity subset ######
-
-# This defines the list of tests that should run in sanity. It should include all the tests listed in
-# TEST_TOOL_ROOTS and TEST_ROOTS excluding only unstable tests.
-SANITY_SUBSET := $(TEST_TOOL_ROOTS) $(TEST_ROOTS)
-
 
 ##############################################################
 #
@@ -131,20 +106,6 @@ SANITY_SUBSET := $(TEST_TOOL_ROOTS) $(TEST_ROOTS)
 
 ###### Special tools' build rules ######
 
-# placeholder for special tools' build rules
-
-###### Special applications' build rules ######
-
-# placeholder for special applications' build rules
-
-###### Special objects' build rules ######
-
-# placeholder for special objects' build rules
-
-###### Special dlls' build rules ######
-
-# placeholder for special dlls' build rules
-
-###### Special libs' build rules ######
-
-# placeholder for special libs' build rules
+LOGGING_FLAGS = -DNO_PINTOOL_LOG
+TOOL_CXXFLAGS += $(LOGGING_FLAGS) -I$(LIBDFT_INC_PATH) -L$(LIBDFT_PATH) -ldft
+# $(LIBDFT_TAG_FLAGS) 

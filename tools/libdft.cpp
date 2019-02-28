@@ -35,39 +35,36 @@
 
 #include "../src/branch_pred.h"
 #include "../src/libdft_api.h"
-#include "syscall_desc.h"
 #include "pin.H"
+#include "syscall_desc.h"
 
-
-/* 
+/*
  * DummyTool (i.e, libdft)
  *
  * used for demonstrating libdft
  */
-int
-main(int argc, char **argv)
-{
-	/* initialize symbol processing */
-	PIN_InitSymbols();
-       
-	/* initialize Pin; optimized branch */
-	if (unlikely(PIN_Init(argc, argv)))
-		/* Pin initialization failed */
-		goto err;
+int main(int argc, char **argv) {
+  /* initialize symbol processing */
+  PIN_InitSymbols();
 
-	/* initialize the core tagging engine */
-	if (unlikely(libdft_init() != 0))
-		/* failed */
-		goto err;
-	
-	/* start Pin */
-	PIN_StartProgram();
+  /* initialize Pin; optimized branch */
+  if (unlikely(PIN_Init(argc, argv)))
+    /* Pin initialization failed */
+    goto err;
 
-	/* typically not reached; make the compiler happy */
-	return EXIT_SUCCESS;
+  /* initialize the core tagging engine */
+  if (unlikely(libdft_init(argc, argv) != 0))
+    /* failed */
+    goto err;
 
-err:	/* error handling */
+  /* start Pin */
+  PIN_StartProgram();
 
-	/* return */
-	return EXIT_FAILURE;
+  /* typically not reached; make the compiler happy */
+  return EXIT_SUCCESS;
+
+err: /* error handling */
+
+  /* return */
+  return EXIT_FAILURE;
 }

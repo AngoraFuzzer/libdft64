@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2010, 2011, 2012, 2013, Columbia University
+ * Copyright (c) 2010, Columbia University
  * All rights reserved.
  *
  * This software was developed by Vasileios P. Kemerlis <vpk@cs.columbia.edu>
@@ -30,11 +30,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef LIBDFT_BRANCH_PRED_H
-#define LIBDFT_BRANCH_PRED_H
+#ifndef __BRANCH_PRED_H__
+#define __BRANCH_PRED_H__
 
 /* compiler directives for branch prediction */
 #define likely(x)       __builtin_expect((x), 1)
 #define unlikely(x)     __builtin_expect((x), 0)
 
-#endif /* LIBDFT_BRANCH_PRED_H */
+#endif /* __BRANCH_PRED_H__ */
