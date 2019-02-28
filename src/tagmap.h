@@ -34,7 +34,10 @@
 #define __TAGMAP_H__
 
 #include "pin.H"
+#include "tag_traits.h"
 #include <utility>
+
+typedef libdft_tag_uint8 tag_t;
 
 #define FLAG_TYPE uint8_t
 
@@ -96,32 +99,8 @@
 #define OVERFLOW_BITS 11
 #define OVERFLOW_MASK (1 << OVERFLOW_BITS)
 
-template <typename T> struct tag_traits {};
-template <typename T> T tag_combine(T const &lhs, T const &rhs);
-template <typename T> std::string tag_sprint(T const &tag);
-template <typename T> bool tag_count(T const &tag);
-
-/********************************************************
- uint8_t tags
- ********************************************************/
-typedef uint8_t libdft_tag_uint8;
-
-template <> struct tag_traits<unsigned char> {
-  typedef unsigned char type;
-  static const bool is_container = false;
-  static const uint8_t cleared_val = 0;
-  static const uint8_t set_val = 1;
-};
-
-template <>
-unsigned char tag_combine(unsigned char const &lhs, unsigned char const &rhs);
-
-template <> std::string tag_sprint(unsigned char const &tag);
-
-template <> bool tag_count(unsigned char const &tag);
-
 extern void libdft_die();
-typedef libdft_tag_uint8 tag_t;
+
 /* XXX: Latest Intel Pin(3.7) does not support std::array :( */
 // typedef std::array<tag_t, PAGE_SIZE> tag_page_t;
 // typedef std::array<tag_page_t*, PAGETABLE_SZ> tag_table_t;

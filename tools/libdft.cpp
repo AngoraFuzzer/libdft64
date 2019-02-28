@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
     goto err;
 
   /* initialize the core tagging engine */
-  if (unlikely(libdft_init(argc, argv) != 0))
+  if (unlikely(libdft_init() != 0))
     /* failed */
     goto err;
 

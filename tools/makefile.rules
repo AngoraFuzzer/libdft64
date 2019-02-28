@@ -28,7 +28,7 @@ TEST_ROOTS :=
 
 # This defines the tools which will be run during the the tests, and were not already defined in
 # TEST_TOOL_ROOTS.
-TOOL_ROOTS := nullpin libdft #libdft-dta
+TOOL_ROOTS := nullpin libdft track #libdft-dta
 
 # This defines the static analysis tools which will be run during the the tests. They should not
 # be defined in TEST_TOOL_ROOTS. If a test with the same name exists, it should be defined in
@@ -42,7 +42,7 @@ SA_TOOL_ROOTS :=
 APP_ROOTS := 
 
 # This defines any additional object files that need to be compiled.
-OBJECT_ROOTS := 
+OBJECT_ROOTS := hook
 
 # This defines any additional dlls (shared objects), other than the pintools, that need to be compiled.
 DLL_ROOTS :=

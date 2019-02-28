@@ -194,7 +194,7 @@ typedef struct {
 } ins_desc_t;
 
 /* libdft API */
-int libdft_init(int, char **);
+int libdft_init(void);
 void libdft_start(void);
 void libdft_die(void);
 

@@ -35,7 +35,7 @@ SA_TOOL_ROOTS :=
 APP_ROOTS :=
 
 # This defines any additional object files that need to be compiled.
-OBJECT_ROOTS := libdft_api libdft_core osutils syscall_desc tagmap
+OBJECT_ROOTS := libdft_api libdft_core osutils syscall_desc tagmap tagset tag_trait
 
 # This defines any additional dlls (shared objects), other than the pintools, that need to be compiled.
 DLL_ROOTS :=

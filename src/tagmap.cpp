@@ -58,21 +58,6 @@
 
 /* For File taint */
 tag_dir_t tag_dir;
-// const unsigned char tag_traits<unsigned char>::cleared_val = 0;
-// const unsigned char tag_traits<unsigned char>::set_val = 1;
-
-template <>
-unsigned char tag_combine(unsigned char const &lhs, unsigned char const &rhs) {
-  return lhs | rhs;
-}
-
-template <> std::string tag_sprint(unsigned char const &tag) {
-  std::stringstream ss;
-  ss << tag;
-  return ss.str();
-}
-
-template <> bool tag_count(unsigned char const &tag) { return tag > 0; }
 
 /*
  * initialize the tagmap; allocate space
