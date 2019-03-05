@@ -13,8 +13,6 @@ else
 CONFIG_ROOT := ../Config
 endif
 
-# LIBDFT_TAG_FLAGS	?= -DUSE_TREE_TAG=1
-
 include $(CONFIG_ROOT)/makefile.config
 include makefile.rules
 include $(TOOLS_ROOT)/Config/makefile.default.rules

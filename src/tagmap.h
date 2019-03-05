@@ -37,8 +37,6 @@
 #include "tag_traits.h"
 #include <utility>
 
-typedef libdft_tag_uint8 tag_t;
-
 #define FLAG_TYPE uint8_t
 
 // Code tag mask
@@ -116,22 +114,13 @@ typedef struct {
   tag_table_t *table[TOP_DIR_SZ];
 } tag_dir_t;
 
-/* tagmap API */
-int tagmap_alloc(void);
-void tagmap_free(void);
-// int tagmap_testb(ADDRINT );
-// void tagmap_setb(ADDRINT , TAG_TYPE );
-// void tagmap_setn(ADDRINT , TAG_TYPE* , UINT32);
-// TAG_TYPE tagmap_getb(ADDRINT );
+void tagmap_setb_with_tag(size_t addr, tag_t const &tag);
+tag_t tagmap_getb(ADDRINT);
+tag_t tagmap_getn(ADDRINT addr, unsigned int size);
 // TAG_TYPE* tagmap_get_ref(ADDRINT);
-// void tagmap_getn(ADDRINT , TAG_TYPE*, UINT32);
-// void tagmap_clrn(ADDRINT, UINT32);
-// void tagmap_clrb(ADDRINT);
+void tagmap_clrb(ADDRINT);
+void tagmap_clrn(ADDRINT, UINT32);
 
-/* File Taint */
-/*
-        Function to mark taint at addr as particular tag
-*/
 inline void tag_dir_setb(tag_dir_t &dir, ADDRINT addr, tag_t const &tag) {
   if (addr > 0x7fffffffffff) {
     return;
@@ -184,14 +173,5 @@ inline tag_t const *tag_dir_getb_as_ptr(tag_dir_t const &dir, ADDRINT addr) {
 inline tag_t tag_dir_getb(tag_dir_t const &dir, ADDRINT addr) {
   return *tag_dir_getb_as_ptr(dir, addr);
 }
-
-// inline tag_t const * tag_dir_getb_as_ptr(tag_dir_t const & dir, ADDRINT
-// addr); inline tag_t tag_dir_getb(tag_dir_t const & dir, ADDRINT addr); inline
-// void tag_dir_setb(tag_dir_t & dir, ADDRINT addr, tag_t const & tag);
-void tagmap_setb_with_tag(size_t addr, tag_t const &tag);
-void file_tagmap_clrb(ADDRINT);
-void file_tagmap_clrn(ADDRINT, UINT32);
-tag_t file_tagmap_getb(ADDRINT);
-bool file_tag_testb(ADDRINT addr);
 
 #endif /* __TAGMAP_H__ */

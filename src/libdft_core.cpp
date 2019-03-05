@@ -9,7 +9,6 @@
 #include "branch_pred.h"
 #include "libdft_api.h"
 #include "libdft_core.h"
-#include "libdft_log.h"
 #include "pin.H"
 #include "tagmap.h"
 
@@ -32,7 +31,7 @@ extern int limit_offset;
 extern std::map<ADDRINT, bool> to_store;
 extern std::map<pair<int, int>, int> file_offsets;
 
-#define RTAG(tid) threads_ctx[tid].vcpu.gpr_file
+#define RTAG(tid) threads_ctx[tid].vcpu.gpr
 
 #define R8TAG(tid, RIDX)                                                       \
   { RTAG(tid)[(RIDX)][0] }
@@ -431,11 +430,11 @@ static void PIN_FAST_ANALYSIS_CALL _cwde(THREADID tid) {
 static void PIN_FAST_ANALYSIS_CALL _movsx_r2r_opwb_u(THREADID tid, uint32_t dst,
                                                      uint32_t src) {
   /* temporary tag value */
-  tag_t src_tag = threads_ctx[tid].vcpu.gpr_file[src][1];
+  tag_t src_tag = threads_ctx[tid].vcpu.gpr[src][1];
 
   /* update the destination (xfer) */
-  threads_ctx[tid].vcpu.gpr_file[dst][0] = src_tag;
-  threads_ctx[tid].vcpu.gpr_file[dst][1] = src_tag;
+  threads_ctx[tid].vcpu.gpr[dst][0] = src_tag;
+  threads_ctx[tid].vcpu.gpr[dst][1] = src_tag;
 }
 
 /*
@@ -453,68 +452,68 @@ static void PIN_FAST_ANALYSIS_CALL _movsx_r2r_opwb_u(THREADID tid, uint32_t dst,
 static void PIN_FAST_ANALYSIS_CALL _movsx_r2r_opwb_l(THREADID tid, uint32_t dst,
                                                      uint32_t src) {
   /* temporary tag value */
-  tag_t src_tag = threads_ctx[tid].vcpu.gpr_file[src][0];
+  tag_t src_tag = threads_ctx[tid].vcpu.gpr[src][0];
 
   /* update the destination (xfer) */
-  threads_ctx[tid].vcpu.gpr_file[dst][0] = src_tag;
-  threads_ctx[tid].vcpu.gpr_file[dst][1] = src_tag;
+  threads_ctx[tid].vcpu.gpr[dst][0] = src_tag;
+  threads_ctx[tid].vcpu.gpr[dst][1] = src_tag;
 }
 
 static void PIN_FAST_ANALYSIS_CALL _movsx_r2r_opqb_u(THREADID tid, uint32_t dst,
                                                      uint32_t src) {
   /* temporary tag value */
-  tag_t src_tag = threads_ctx[tid].vcpu.gpr_file[src][1];
+  tag_t src_tag = threads_ctx[tid].vcpu.gpr[src][1];
 
   /* update the destination (xfer) */
   for (size_t i = 0; i < 8; i++)
-    threads_ctx[tid].vcpu.gpr_file[dst][i] = src_tag;
+    threads_ctx[tid].vcpu.gpr[dst][i] = src_tag;
 }
 
 static void PIN_FAST_ANALYSIS_CALL _movsx_r2r_oplb_u(THREADID tid, uint32_t dst,
                                                      uint32_t src) {
   /* temporary tag value */
-  tag_t src_tag = threads_ctx[tid].vcpu.gpr_file[src][1];
+  tag_t src_tag = threads_ctx[tid].vcpu.gpr[src][1];
 
   /* update the destination (xfer) */
   for (size_t i = 0; i < 4; i++)
-    threads_ctx[tid].vcpu.gpr_file[dst][i] = src_tag;
+    threads_ctx[tid].vcpu.gpr[dst][i] = src_tag;
 }
 
 static void PIN_FAST_ANALYSIS_CALL _movsx_r2r_opqb_l(THREADID tid, uint32_t dst,
                                                      uint32_t src) {
   /* temporary tag value */
-  tag_t src_tag = threads_ctx[tid].vcpu.gpr_file[src][0];
+  tag_t src_tag = threads_ctx[tid].vcpu.gpr[src][0];
 
   /* update the destination (xfer) */
   for (size_t i = 0; i < 8; i++)
-    threads_ctx[tid].vcpu.gpr_file[dst][0] = src_tag;
+    threads_ctx[tid].vcpu.gpr[dst][0] = src_tag;
 }
 
 static void PIN_FAST_ANALYSIS_CALL _movsx_r2r_oplb_l(THREADID tid, uint32_t dst,
                                                      uint32_t src) {
   /* temporary tag value */
-  tag_t src_tag = threads_ctx[tid].vcpu.gpr_file[src][0];
+  tag_t src_tag = threads_ctx[tid].vcpu.gpr[src][0];
 
   /* update the destination (xfer) */
   for (size_t i = 0; i < 4; i++)
-    threads_ctx[tid].vcpu.gpr_file[dst][0] = src_tag;
+    threads_ctx[tid].vcpu.gpr[dst][0] = src_tag;
 }
 
 static void PIN_FAST_ANALYSIS_CALL _movsx_r2r_opqw(THREADID tid, uint32_t dst,
                                                    uint32_t src) {
   /* temporary tag values */
-  tag_t src_low_tag = threads_ctx[tid].vcpu.gpr_file[src][0];
-  tag_t src_high_tag = threads_ctx[tid].vcpu.gpr_file[src][1];
+  tag_t src_low_tag = threads_ctx[tid].vcpu.gpr[src][0];
+  tag_t src_high_tag = threads_ctx[tid].vcpu.gpr[src][1];
 
   /* update the destination (xfer) */
-  threads_ctx[tid].vcpu.gpr_file[dst][0] = src_low_tag;
-  threads_ctx[tid].vcpu.gpr_file[dst][1] = src_high_tag;
-  threads_ctx[tid].vcpu.gpr_file[dst][2] = src_low_tag;
-  threads_ctx[tid].vcpu.gpr_file[dst][3] = src_high_tag;
-  threads_ctx[tid].vcpu.gpr_file[dst][4] = src_low_tag;
-  threads_ctx[tid].vcpu.gpr_file[dst][5] = src_high_tag;
-  threads_ctx[tid].vcpu.gpr_file[dst][6] = src_low_tag;
-  threads_ctx[tid].vcpu.gpr_file[dst][7] = src_high_tag;
+  threads_ctx[tid].vcpu.gpr[dst][0] = src_low_tag;
+  threads_ctx[tid].vcpu.gpr[dst][1] = src_high_tag;
+  threads_ctx[tid].vcpu.gpr[dst][2] = src_low_tag;
+  threads_ctx[tid].vcpu.gpr[dst][3] = src_high_tag;
+  threads_ctx[tid].vcpu.gpr[dst][4] = src_low_tag;
+  threads_ctx[tid].vcpu.gpr[dst][5] = src_high_tag;
+  threads_ctx[tid].vcpu.gpr[dst][6] = src_low_tag;
+  threads_ctx[tid].vcpu.gpr[dst][7] = src_high_tag;
 }
 
 static void PIN_FAST_ANALYSIS_CALL _movsx_r2r_opql(THREADID tid, uint32_t dst,
@@ -529,14 +528,14 @@ static void PIN_FAST_ANALYSIS_CALL _movsx_r2r_opql(THREADID tid, uint32_t dst,
 static void PIN_FAST_ANALYSIS_CALL _movsx_r2r_oplw(THREADID tid, uint32_t dst,
                                                    uint32_t src) {
   /* temporary tag values */
-  tag_t src_low_tag = threads_ctx[tid].vcpu.gpr_file[src][0];
-  tag_t src_high_tag = threads_ctx[tid].vcpu.gpr_file[src][1];
+  tag_t src_low_tag = threads_ctx[tid].vcpu.gpr[src][0];
+  tag_t src_high_tag = threads_ctx[tid].vcpu.gpr[src][1];
 
   /* update the destination (xfer) */
-  threads_ctx[tid].vcpu.gpr_file[dst][0] = src_low_tag;
-  threads_ctx[tid].vcpu.gpr_file[dst][1] = src_high_tag;
-  threads_ctx[tid].vcpu.gpr_file[dst][2] = src_low_tag;
-  threads_ctx[tid].vcpu.gpr_file[dst][3] = src_high_tag;
+  threads_ctx[tid].vcpu.gpr[dst][0] = src_low_tag;
+  threads_ctx[tid].vcpu.gpr[dst][1] = src_high_tag;
+  threads_ctx[tid].vcpu.gpr[dst][2] = src_low_tag;
+  threads_ctx[tid].vcpu.gpr[dst][3] = src_high_tag;
 }
 
 static void PIN_FAST_ANALYSIS_CALL _movsx_m2r_opwb(THREADID tid, uint32_t dst,
@@ -614,11 +613,11 @@ static void PIN_FAST_ANALYSIS_CALL _movsx_m2r_oplw(THREADID tid, uint32_t dst,
 static void PIN_FAST_ANALYSIS_CALL _movzx_r2r_opwb_u(THREADID tid, uint32_t dst,
                                                      uint32_t src) {
   /* temporary tag value */
-  tag_t src_tag = threads_ctx[tid].vcpu.gpr_file[src][1];
+  tag_t src_tag = threads_ctx[tid].vcpu.gpr[src][1];
 
   /* update the destination (xfer) */
-  threads_ctx[tid].vcpu.gpr_file[dst][0] = src_tag;
-  threads_ctx[tid].vcpu.gpr_file[dst][1] = src_tag;
+  threads_ctx[tid].vcpu.gpr[dst][0] = src_tag;
+  threads_ctx[tid].vcpu.gpr[dst][1] = src_tag;
 }
 
 /*
@@ -636,71 +635,71 @@ static void PIN_FAST_ANALYSIS_CALL _movzx_r2r_opwb_u(THREADID tid, uint32_t dst,
 static void PIN_FAST_ANALYSIS_CALL _movzx_r2r_opwb_l(THREADID tid, uint32_t dst,
                                                      uint32_t src) {
   /* temporary tag value */
-  tag_t src_tag = threads_ctx[tid].vcpu.gpr_file[src][0];
+  tag_t src_tag = threads_ctx[tid].vcpu.gpr[src][0];
 
   /* update the destination (xfer) */
-  threads_ctx[tid].vcpu.gpr_file[dst][0] = src_tag;
-  threads_ctx[tid].vcpu.gpr_file[dst][1] = src_tag;
+  threads_ctx[tid].vcpu.gpr[dst][0] = src_tag;
+  threads_ctx[tid].vcpu.gpr[dst][1] = src_tag;
 }
 
 static void PIN_FAST_ANALYSIS_CALL _movzx_r2r_opqb_u(THREADID tid, uint32_t dst,
                                                      uint32_t src) {
-  tag_t src_tag = threads_ctx[tid].vcpu.gpr_file[src][1];
+  tag_t src_tag = threads_ctx[tid].vcpu.gpr[src][1];
 
   /* update the destination (xfer) */
-  threads_ctx[tid].vcpu.gpr_file[dst][0] = src_tag;
-  threads_ctx[tid].vcpu.gpr_file[dst][1] = src_tag;
+  threads_ctx[tid].vcpu.gpr[dst][0] = src_tag;
+  threads_ctx[tid].vcpu.gpr[dst][1] = src_tag;
 }
 
 static void PIN_FAST_ANALYSIS_CALL _movzx_r2r_oplb_u(THREADID tid, uint32_t dst,
                                                      uint32_t src) {
-  tag_t src_tag = threads_ctx[tid].vcpu.gpr_file[src][1];
+  tag_t src_tag = threads_ctx[tid].vcpu.gpr[src][1];
 
   /* update the destination (xfer) */
-  threads_ctx[tid].vcpu.gpr_file[dst][0] = src_tag;
-  threads_ctx[tid].vcpu.gpr_file[dst][1] = src_tag;
+  threads_ctx[tid].vcpu.gpr[dst][0] = src_tag;
+  threads_ctx[tid].vcpu.gpr[dst][1] = src_tag;
 }
 
 static void PIN_FAST_ANALYSIS_CALL _movzx_r2r_opqb_l(THREADID tid, uint32_t dst,
                                                      uint32_t src) {
   /* temporary tag value */
-  tag_t src_tag = threads_ctx[tid].vcpu.gpr_file[src][0];
+  tag_t src_tag = threads_ctx[tid].vcpu.gpr[src][0];
 
   /* update the destination (xfer) */
   for (size_t i = 0; i < 8; i++)
-    threads_ctx[tid].vcpu.gpr_file[dst][i] = src_tag;
+    threads_ctx[tid].vcpu.gpr[dst][i] = src_tag;
 }
 
 static void PIN_FAST_ANALYSIS_CALL _movzx_r2r_oplb_l(THREADID tid, uint32_t dst,
                                                      uint32_t src) {
   /* temporary tag value */
-  tag_t src_tag = threads_ctx[tid].vcpu.gpr_file[src][0];
+  tag_t src_tag = threads_ctx[tid].vcpu.gpr[src][0];
 
   /* update the destination (xfer) */
   for (size_t i = 0; i < 4; i++)
-    threads_ctx[tid].vcpu.gpr_file[dst][i] = src_tag;
+    threads_ctx[tid].vcpu.gpr[dst][i] = src_tag;
 }
 
 static void PIN_FAST_ANALYSIS_CALL _movzx_r2r_opqw(THREADID tid, uint32_t dst,
                                                    uint32_t src) {
   /* temporary tag value */
-  tag_t src_tags[] = {threads_ctx[tid].vcpu.gpr_file[src][0],
-                      threads_ctx[tid].vcpu.gpr_file[src][1]};
+  tag_t src_tags[] = {threads_ctx[tid].vcpu.gpr[src][0],
+                      threads_ctx[tid].vcpu.gpr[src][1]};
 
   /* update the destination (xfer) */
   for (size_t i = 0; i < 8; i++)
-    threads_ctx[tid].vcpu.gpr_file[dst][i] = src_tags[i % 2];
+    threads_ctx[tid].vcpu.gpr[dst][i] = src_tags[i % 2];
 }
 
 static void PIN_FAST_ANALYSIS_CALL _movzx_r2r_oplw(THREADID tid, uint32_t dst,
                                                    uint32_t src) {
   /* temporary tag value */
-  tag_t src_tags[] = {threads_ctx[tid].vcpu.gpr_file[src][0],
-                      threads_ctx[tid].vcpu.gpr_file[src][1]};
+  tag_t src_tags[] = {threads_ctx[tid].vcpu.gpr[src][0],
+                      threads_ctx[tid].vcpu.gpr[src][1]};
 
   /* update the destination (xfer) */
   for (size_t i = 0; i < 4; i++)
-    threads_ctx[tid].vcpu.gpr_file[dst][i] = src_tags[i % 2];
+    threads_ctx[tid].vcpu.gpr[dst][i] = src_tags[i % 2];
 }
 
 /*
@@ -721,8 +720,8 @@ static void PIN_FAST_ANALYSIS_CALL _movzx_m2r_opwb(THREADID tid, uint32_t dst,
   /* temporary tag value */
   tag_t src_tag = M8TAG(src);
   /* update the destination (xfer) */
-  threads_ctx[tid].vcpu.gpr_file[dst][0] = src_tag;
-  threads_ctx[tid].vcpu.gpr_file[dst][1] = src_tag;
+  threads_ctx[tid].vcpu.gpr[dst][0] = src_tag;
+  threads_ctx[tid].vcpu.gpr[dst][1] = src_tag;
 }
 
 static void PIN_FAST_ANALYSIS_CALL _movzx_m2r_opqb(THREADID tid, uint32_t dst,
@@ -733,7 +732,7 @@ static void PIN_FAST_ANALYSIS_CALL _movzx_m2r_opqb(THREADID tid, uint32_t dst,
   // " + decstr(dst) + "\n");
   /* update the destination (xfer) */
   for (size_t i = 0; i < 8; i++)
-    threads_ctx[tid].vcpu.gpr_file[dst][i] = src_tag;
+    threads_ctx[tid].vcpu.gpr[dst][i] = src_tag;
 }
 
 static void PIN_FAST_ANALYSIS_CALL _movzx_m2r_oplb(THREADID tid, uint32_t dst,
@@ -744,7 +743,7 @@ static void PIN_FAST_ANALYSIS_CALL _movzx_m2r_oplb(THREADID tid, uint32_t dst,
   // " + decstr(dst) + "\n");
   /* update the destination (xfer) */
   for (size_t i = 0; i < 4; i++)
-    threads_ctx[tid].vcpu.gpr_file[dst][i] = src_tag;
+    threads_ctx[tid].vcpu.gpr[dst][i] = src_tag;
 }
 
 static void PIN_FAST_ANALYSIS_CALL _movzx_m2r_opqw(THREADID tid, uint32_t dst,
@@ -755,7 +754,7 @@ static void PIN_FAST_ANALYSIS_CALL _movzx_m2r_opqw(THREADID tid, uint32_t dst,
 
   /* update the destination (xfer) */
   for (size_t i = 0; i < 8; i++)
-    threads_ctx[tid].vcpu.gpr_file[dst][i] = src_tags[i % 2];
+    threads_ctx[tid].vcpu.gpr[dst][i] = src_tags[i % 2];
 }
 
 static void PIN_FAST_ANALYSIS_CALL _movzx_m2r_oplw(THREADID tid, uint32_t dst,
@@ -766,7 +765,7 @@ static void PIN_FAST_ANALYSIS_CALL _movzx_m2r_oplw(THREADID tid, uint32_t dst,
 
   /* update the destination (xfer) */
   for (size_t i = 0; i < 4; i++)
-    threads_ctx[tid].vcpu.gpr_file[dst][i] = src_tags[i % 2];
+    threads_ctx[tid].vcpu.gpr[dst][i] = src_tags[i % 2];
 }
 
 static ADDRINT PIN_FAST_ANALYSIS_CALL _cmpxchg_r2r_opq_fast(THREADID tid,
@@ -811,28 +810,25 @@ static void PIN_FAST_ANALYSIS_CALL _cmpxchg_r2r_opq_slow(THREADID tid,
                                                          uint32_t dst,
                                                          uint32_t src) {
   /* restore the tag value from the scratch register */
-  tag_t saved_tags[] = {threads_ctx[tid].vcpu.gpr_file[DFT_REG_HELPER1][0],
-                        threads_ctx[tid].vcpu.gpr_file[DFT_REG_HELPER1][1],
-                        threads_ctx[tid].vcpu.gpr_file[DFT_REG_HELPER1][2],
-                        threads_ctx[tid].vcpu.gpr_file[DFT_REG_HELPER1][3],
-                        threads_ctx[tid].vcpu.gpr_file[DFT_REG_HELPER1][4],
-                        threads_ctx[tid].vcpu.gpr_file[DFT_REG_HELPER1][5],
-                        threads_ctx[tid].vcpu.gpr_file[DFT_REG_HELPER1][6],
-                        threads_ctx[tid].vcpu.gpr_file[DFT_REG_HELPER1][7]};
+  tag_t saved_tags[] = {threads_ctx[tid].vcpu.gpr[DFT_REG_HELPER1][0],
+                        threads_ctx[tid].vcpu.gpr[DFT_REG_HELPER1][1],
+                        threads_ctx[tid].vcpu.gpr[DFT_REG_HELPER1][2],
+                        threads_ctx[tid].vcpu.gpr[DFT_REG_HELPER1][3],
+                        threads_ctx[tid].vcpu.gpr[DFT_REG_HELPER1][4],
+                        threads_ctx[tid].vcpu.gpr[DFT_REG_HELPER1][5],
+                        threads_ctx[tid].vcpu.gpr[DFT_REG_HELPER1][6],
+                        threads_ctx[tid].vcpu.gpr[DFT_REG_HELPER1][7]};
   for (size_t i = 0; i < 8; i++)
-    threads_ctx[tid].vcpu.gpr_file[DFT_REG_RAX][i] = saved_tags[i];
+    threads_ctx[tid].vcpu.gpr[DFT_REG_RAX][i] = saved_tags[i];
 
   /* update */
-  tag_t src_tags[] = {threads_ctx[tid].vcpu.gpr_file[src][0],
-                      threads_ctx[tid].vcpu.gpr_file[src][1],
-                      threads_ctx[tid].vcpu.gpr_file[src][2],
-                      threads_ctx[tid].vcpu.gpr_file[src][3],
-                      threads_ctx[tid].vcpu.gpr_file[src][4],
-                      threads_ctx[tid].vcpu.gpr_file[src][5],
-                      threads_ctx[tid].vcpu.gpr_file[src][6],
-                      threads_ctx[tid].vcpu.gpr_file[src][7]};
+  tag_t src_tags[] = {
+      threads_ctx[tid].vcpu.gpr[src][0], threads_ctx[tid].vcpu.gpr[src][1],
+      threads_ctx[tid].vcpu.gpr[src][2], threads_ctx[tid].vcpu.gpr[src][3],
+      threads_ctx[tid].vcpu.gpr[src][4], threads_ctx[tid].vcpu.gpr[src][5],
+      threads_ctx[tid].vcpu.gpr[src][6], threads_ctx[tid].vcpu.gpr[src][7]};
   for (size_t i = 0; i < 8; i++) {
-    threads_ctx[tid].vcpu.gpr_file[dst][i] = src_tags[i];
+    threads_ctx[tid].vcpu.gpr[dst][i] = src_tags[i];
   }
 }
 
@@ -840,20 +836,19 @@ static void PIN_FAST_ANALYSIS_CALL _cmpxchg_r2r_opl_slow(THREADID tid,
                                                          uint32_t dst,
                                                          uint32_t src) {
   /* restore the tag value from the scratch register */
-  tag_t saved_tags[] = {threads_ctx[tid].vcpu.gpr_file[DFT_REG_HELPER1][0],
-                        threads_ctx[tid].vcpu.gpr_file[DFT_REG_HELPER1][1],
-                        threads_ctx[tid].vcpu.gpr_file[DFT_REG_HELPER1][2],
-                        threads_ctx[tid].vcpu.gpr_file[DFT_REG_HELPER1][3]};
+  tag_t saved_tags[] = {threads_ctx[tid].vcpu.gpr[DFT_REG_HELPER1][0],
+                        threads_ctx[tid].vcpu.gpr[DFT_REG_HELPER1][1],
+                        threads_ctx[tid].vcpu.gpr[DFT_REG_HELPER1][2],
+                        threads_ctx[tid].vcpu.gpr[DFT_REG_HELPER1][3]};
   for (size_t i = 0; i < 4; i++)
-    threads_ctx[tid].vcpu.gpr_file[DFT_REG_RAX][i] = saved_tags[i];
+    threads_ctx[tid].vcpu.gpr[DFT_REG_RAX][i] = saved_tags[i];
 
   /* update */
-  tag_t src_tags[] = {threads_ctx[tid].vcpu.gpr_file[src][0],
-                      threads_ctx[tid].vcpu.gpr_file[src][1],
-                      threads_ctx[tid].vcpu.gpr_file[src][2],
-                      threads_ctx[tid].vcpu.gpr_file[src][3]};
+  tag_t src_tags[] = {
+      threads_ctx[tid].vcpu.gpr[src][0], threads_ctx[tid].vcpu.gpr[src][1],
+      threads_ctx[tid].vcpu.gpr[src][2], threads_ctx[tid].vcpu.gpr[src][3]};
   for (size_t i = 0; i < 4; i++) {
-    threads_ctx[tid].vcpu.gpr_file[dst][i] = src_tags[i];
+    threads_ctx[tid].vcpu.gpr[dst][i] = src_tags[i];
   }
 }
 
@@ -879,18 +874,18 @@ static void PIN_FAST_ANALYSIS_CALL _cmpxchg_r2r_opw_slow(THREADID tid,
                                                          uint32_t src) {
   /* restore the tag value from the scratch register */
 
-  tag_t saved_tags[] = {threads_ctx[tid].vcpu.gpr_file[DFT_REG_HELPER1][0],
-                        threads_ctx[tid].vcpu.gpr_file[DFT_REG_HELPER1][1],
-                        threads_ctx[tid].vcpu.gpr_file[DFT_REG_HELPER1][2],
-                        threads_ctx[tid].vcpu.gpr_file[DFT_REG_HELPER1][3]};
+  tag_t saved_tags[] = {threads_ctx[tid].vcpu.gpr[DFT_REG_HELPER1][0],
+                        threads_ctx[tid].vcpu.gpr[DFT_REG_HELPER1][1],
+                        threads_ctx[tid].vcpu.gpr[DFT_REG_HELPER1][2],
+                        threads_ctx[tid].vcpu.gpr[DFT_REG_HELPER1][3]};
   for (size_t i = 0; i < 4; i++)
-    threads_ctx[tid].vcpu.gpr_file[DFT_REG_RAX][i] = saved_tags[i];
+    threads_ctx[tid].vcpu.gpr[DFT_REG_RAX][i] = saved_tags[i];
 
   /* update */
-  tag_t src_tags[] = {threads_ctx[tid].vcpu.gpr_file[src][0],
-                      threads_ctx[tid].vcpu.gpr_file[src][1]};
-  threads_ctx[tid].vcpu.gpr_file[dst][0] = src_tags[0];
-  threads_ctx[tid].vcpu.gpr_file[dst][1] = src_tags[1];
+  tag_t src_tags[] = {threads_ctx[tid].vcpu.gpr[src][0],
+                      threads_ctx[tid].vcpu.gpr[src][1]};
+  threads_ctx[tid].vcpu.gpr[dst][0] = src_tags[0];
+  threads_ctx[tid].vcpu.gpr[dst][1] = src_tags[1];
 }
 
 static ADDRINT PIN_FAST_ANALYSIS_CALL _cmpxchg_m2r_opq_fast(THREADID tid,
@@ -898,16 +893,16 @@ static ADDRINT PIN_FAST_ANALYSIS_CALL _cmpxchg_m2r_opq_fast(THREADID tid,
                                                             ADDRINT src) {
   /* save the tag value of dst in the scratch register */
 
-  tag_t save_tags[] = {threads_ctx[tid].vcpu.gpr_file[DFT_REG_RAX][0],
-                       threads_ctx[tid].vcpu.gpr_file[DFT_REG_RAX][1],
-                       threads_ctx[tid].vcpu.gpr_file[DFT_REG_RAX][2],
-                       threads_ctx[tid].vcpu.gpr_file[DFT_REG_RAX][3],
-                       threads_ctx[tid].vcpu.gpr_file[DFT_REG_RAX][4],
-                       threads_ctx[tid].vcpu.gpr_file[DFT_REG_RAX][5],
-                       threads_ctx[tid].vcpu.gpr_file[DFT_REG_RAX][6],
-                       threads_ctx[tid].vcpu.gpr_file[DFT_REG_RAX][7]};
+  tag_t save_tags[] = {threads_ctx[tid].vcpu.gpr[DFT_REG_RAX][0],
+                       threads_ctx[tid].vcpu.gpr[DFT_REG_RAX][1],
+                       threads_ctx[tid].vcpu.gpr[DFT_REG_RAX][2],
+                       threads_ctx[tid].vcpu.gpr[DFT_REG_RAX][3],
+                       threads_ctx[tid].vcpu.gpr[DFT_REG_RAX][4],
+                       threads_ctx[tid].vcpu.gpr[DFT_REG_RAX][5],
+                       threads_ctx[tid].vcpu.gpr[DFT_REG_RAX][6],
+                       threads_ctx[tid].vcpu.gpr[DFT_REG_RAX][7]};
   for (size_t i = 0; i < 8; i++)
-    threads_ctx[tid].vcpu.gpr_file[DFT_REG_HELPER1][i] = save_tags[i];
+    threads_ctx[tid].vcpu.gpr[DFT_REG_HELPER1][i] = save_tags[i];
 
   tag_t src_tags[] = {
       tag_dir_getb(tag_dir, src),     tag_dir_getb(tag_dir, src + 1),
@@ -915,7 +910,7 @@ static ADDRINT PIN_FAST_ANALYSIS_CALL _cmpxchg_m2r_opq_fast(THREADID tid,
       tag_dir_getb(tag_dir, src + 4), tag_dir_getb(tag_dir, src + 5),
       tag_dir_getb(tag_dir, src + 6), tag_dir_getb(tag_dir, src + 7)};
   for (size_t i = 0; i < 8; i++) {
-    threads_ctx[tid].vcpu.gpr_file[DFT_REG_RAX][i] = src_tags[i];
+    threads_ctx[tid].vcpu.gpr[DFT_REG_RAX][i] = src_tags[i];
   }
 
   return (dst_val == *(uint32_t *)src);
@@ -926,18 +921,18 @@ static ADDRINT PIN_FAST_ANALYSIS_CALL _cmpxchg_m2r_opl_fast(THREADID tid,
                                                             ADDRINT src) {
   /* save the tag value of dst in the scratch register */
 
-  tag_t save_tags[] = {threads_ctx[tid].vcpu.gpr_file[DFT_REG_RAX][0],
-                       threads_ctx[tid].vcpu.gpr_file[DFT_REG_RAX][1],
-                       threads_ctx[tid].vcpu.gpr_file[DFT_REG_RAX][2],
-                       threads_ctx[tid].vcpu.gpr_file[DFT_REG_RAX][3]};
+  tag_t save_tags[] = {threads_ctx[tid].vcpu.gpr[DFT_REG_RAX][0],
+                       threads_ctx[tid].vcpu.gpr[DFT_REG_RAX][1],
+                       threads_ctx[tid].vcpu.gpr[DFT_REG_RAX][2],
+                       threads_ctx[tid].vcpu.gpr[DFT_REG_RAX][3]};
   for (size_t i = 0; i < 4; i++)
-    threads_ctx[tid].vcpu.gpr_file[DFT_REG_HELPER1][i] = save_tags[i];
+    threads_ctx[tid].vcpu.gpr[DFT_REG_HELPER1][i] = save_tags[i];
 
   tag_t src_tags[] = {
       tag_dir_getb(tag_dir, src), tag_dir_getb(tag_dir, src + 1),
       tag_dir_getb(tag_dir, src + 2), tag_dir_getb(tag_dir, src + 3)};
   for (size_t i = 0; i < 4; i++) {
-    threads_ctx[tid].vcpu.gpr_file[DFT_REG_RAX][i] = src_tags[i];
+    threads_ctx[tid].vcpu.gpr[DFT_REG_RAX][i] = src_tags[i];
   }
 
   return (dst_val == *(uint32_t *)src);
@@ -948,7 +943,7 @@ static void PIN_FAST_ANALYSIS_CALL _cmpxchg_r2m_opq_slow(THREADID tid,
                                                          uint32_t src) {
   tag_t saved_tags[] = R64TAG(tid, DFT_REG_HELPER1);
   for (size_t i = 0; i < 8; i++)
-    threads_ctx[tid].vcpu.gpr_file[DFT_REG_RAX][i] = saved_tags[i];
+    threads_ctx[tid].vcpu.gpr[DFT_REG_RAX][i] = saved_tags[i];
 
   /* update */
   tag_t src_tags[] = R64TAG(tid, src);
@@ -962,7 +957,7 @@ static void PIN_FAST_ANALYSIS_CALL _cmpxchg_r2m_opl_slow(THREADID tid,
                                                          uint32_t src) {
   tag_t saved_tags[] = R32TAG(tid, DFT_REG_HELPER1);
   for (size_t i = 0; i < 4; i++)
-    threads_ctx[tid].vcpu.gpr_file[DFT_REG_RAX][i] = saved_tags[i];
+    threads_ctx[tid].vcpu.gpr[DFT_REG_RAX][i] = saved_tags[i];
 
   /* update */
   tag_t src_tags[] = R32TAG(tid, src);
@@ -976,18 +971,18 @@ static ADDRINT PIN_FAST_ANALYSIS_CALL _cmpxchg_m2r_opw_fast(THREADID tid,
                                                             ADDRINT src) {
   /* save the tag value of dst in the scratch register */
 
-  tag_t save_tags[] = {threads_ctx[tid].vcpu.gpr_file[DFT_REG_RAX][0],
-                       threads_ctx[tid].vcpu.gpr_file[DFT_REG_RAX][1],
-                       threads_ctx[tid].vcpu.gpr_file[DFT_REG_RAX][2],
-                       threads_ctx[tid].vcpu.gpr_file[DFT_REG_RAX][3]};
+  tag_t save_tags[] = {threads_ctx[tid].vcpu.gpr[DFT_REG_RAX][0],
+                       threads_ctx[tid].vcpu.gpr[DFT_REG_RAX][1],
+                       threads_ctx[tid].vcpu.gpr[DFT_REG_RAX][2],
+                       threads_ctx[tid].vcpu.gpr[DFT_REG_RAX][3]};
 
   for (size_t i = 0; i < 4; i++)
-    threads_ctx[tid].vcpu.gpr_file[DFT_REG_HELPER1][i] = save_tags[i];
+    threads_ctx[tid].vcpu.gpr[DFT_REG_HELPER1][i] = save_tags[i];
 
   tag_t src_tags[] = {tag_dir_getb(tag_dir, src),
                       tag_dir_getb(tag_dir, src + 1)};
   for (size_t i = 0; i < 2; i++) {
-    threads_ctx[tid].vcpu.gpr_file[DFT_REG_RAX][i] = src_tags[i];
+    threads_ctx[tid].vcpu.gpr[DFT_REG_RAX][i] = src_tags[i];
   }
 
   /* compare the dst and src values; the original values the tag bits */
@@ -998,17 +993,17 @@ static void PIN_FAST_ANALYSIS_CALL _cmpxchg_r2m_opw_slow(THREADID tid,
                                                          ADDRINT dst,
                                                          uint32_t src) {
   /* restore the tag value from the scratch register */
-  tag_t saved_tags[] = {threads_ctx[tid].vcpu.gpr_file[DFT_REG_HELPER1][0],
-                        threads_ctx[tid].vcpu.gpr_file[DFT_REG_HELPER1][1],
-                        threads_ctx[tid].vcpu.gpr_file[DFT_REG_HELPER1][2],
-                        threads_ctx[tid].vcpu.gpr_file[DFT_REG_HELPER1][3]};
+  tag_t saved_tags[] = {threads_ctx[tid].vcpu.gpr[DFT_REG_HELPER1][0],
+                        threads_ctx[tid].vcpu.gpr[DFT_REG_HELPER1][1],
+                        threads_ctx[tid].vcpu.gpr[DFT_REG_HELPER1][2],
+                        threads_ctx[tid].vcpu.gpr[DFT_REG_HELPER1][3]};
 
   for (size_t i = 0; i < 4; i++)
-    threads_ctx[tid].vcpu.gpr_file[DFT_REG_RAX][i] = saved_tags[i];
+    threads_ctx[tid].vcpu.gpr[DFT_REG_RAX][i] = saved_tags[i];
 
   /* update */
-  tag_t src_tags[] = {threads_ctx[tid].vcpu.gpr_file[src][0],
-                      threads_ctx[tid].vcpu.gpr_file[src][1]};
+  tag_t src_tags[] = {threads_ctx[tid].vcpu.gpr[src][0],
+                      threads_ctx[tid].vcpu.gpr[src][1]};
   for (size_t i = 0; i < 2; i++) {
     tag_dir_setb(tag_dir, dst + i, src_tags[i]);
   }
@@ -1017,48 +1012,48 @@ static void PIN_FAST_ANALYSIS_CALL _cmpxchg_r2m_opw_slow(THREADID tid,
 static void PIN_FAST_ANALYSIS_CALL _xchg_r2r_opb_ul(THREADID tid, uint32_t dst,
                                                     uint32_t src) {
   /* temporary tag value */
-  tag_t tmp_tag = threads_ctx[tid].vcpu.gpr_file[dst][1];
+  tag_t tmp_tag = threads_ctx[tid].vcpu.gpr[dst][1];
 
-  tag_t src_tag = threads_ctx[tid].vcpu.gpr_file[src][0];
+  tag_t src_tag = threads_ctx[tid].vcpu.gpr[src][0];
 
   /* swap */
-  threads_ctx[tid].vcpu.gpr_file[dst][1] = src_tag;
-  threads_ctx[tid].vcpu.gpr_file[src][0] = tmp_tag;
+  threads_ctx[tid].vcpu.gpr[dst][1] = src_tag;
+  threads_ctx[tid].vcpu.gpr[src][0] = tmp_tag;
 }
 
 static void PIN_FAST_ANALYSIS_CALL _xchg_r2r_opb_lu(THREADID tid, uint32_t dst,
                                                     uint32_t src) {
   /* temporary tag value */
-  tag_t tmp_tag = threads_ctx[tid].vcpu.gpr_file[dst][0];
+  tag_t tmp_tag = threads_ctx[tid].vcpu.gpr[dst][0];
 
-  tag_t src_tag = threads_ctx[tid].vcpu.gpr_file[src][1];
+  tag_t src_tag = threads_ctx[tid].vcpu.gpr[src][1];
 
   /* swap */
-  threads_ctx[tid].vcpu.gpr_file[dst][0] = src_tag;
-  threads_ctx[tid].vcpu.gpr_file[src][1] = tmp_tag;
+  threads_ctx[tid].vcpu.gpr[dst][0] = src_tag;
+  threads_ctx[tid].vcpu.gpr[src][1] = tmp_tag;
 }
 
 static void PIN_FAST_ANALYSIS_CALL _xchg_r2r_opb_u(THREADID tid, uint32_t dst,
                                                    uint32_t src) {
   /* temporary tag value */
-  tag_t tmp_tag = threads_ctx[tid].vcpu.gpr_file[dst][1];
+  tag_t tmp_tag = threads_ctx[tid].vcpu.gpr[dst][1];
 
-  tag_t src_tag = threads_ctx[tid].vcpu.gpr_file[src][1];
+  tag_t src_tag = threads_ctx[tid].vcpu.gpr[src][1];
 
   /* swap */
-  threads_ctx[tid].vcpu.gpr_file[dst][1] = src_tag;
-  threads_ctx[tid].vcpu.gpr_file[src][1] = tmp_tag;
+  threads_ctx[tid].vcpu.gpr[dst][1] = src_tag;
+  threads_ctx[tid].vcpu.gpr[src][1] = tmp_tag;
 }
 
 static void PIN_FAST_ANALYSIS_CALL _xchg_r2r_opb_l(THREADID tid, uint32_t dst,
                                                    uint32_t src) {
-  tag_t tmp_tag = threads_ctx[tid].vcpu.gpr_file[dst][0];
+  tag_t tmp_tag = threads_ctx[tid].vcpu.gpr[dst][0];
 
-  tag_t src_tag = threads_ctx[tid].vcpu.gpr_file[src][0];
+  tag_t src_tag = threads_ctx[tid].vcpu.gpr[src][0];
 
   /* swap */
-  threads_ctx[tid].vcpu.gpr_file[dst][0] = src_tag;
-  threads_ctx[tid].vcpu.gpr_file[src][0] = tmp_tag;
+  threads_ctx[tid].vcpu.gpr[dst][0] = src_tag;
+  threads_ctx[tid].vcpu.gpr[src][0] = tmp_tag;
 }
 
 static void PIN_FAST_ANALYSIS_CALL _xchg_r2r_opw(THREADID tid, uint32_t dst,
@@ -1082,7 +1077,7 @@ static void PIN_FAST_ANALYSIS_CALL _xchg_m2r_opb_u(THREADID tid, uint32_t dst,
   tag_t src_tag = M8TAG(src);
 
   /* swap */
-  threads_ctx[tid].vcpu.gpr_file[dst][1] = src_tag;
+  threads_ctx[tid].vcpu.gpr[dst][1] = src_tag;
   tag_dir_setb(tag_dir, src, tmp_tag);
 }
 static void PIN_FAST_ANALYSIS_CALL _xchg_m2r_opb_l(THREADID tid, uint32_t dst,
@@ -1157,73 +1152,69 @@ static void PIN_FAST_ANALYSIS_CALL _xchg_m2r_opl(THREADID tid, uint32_t dst,
 
 static void PIN_FAST_ANALYSIS_CALL _xadd_r2r_opb_ul(THREADID tid, uint32_t dst,
                                                     uint32_t src) {
-  tag_t tmp_tag = threads_ctx[tid].vcpu.gpr_file[dst][1];
+  tag_t tmp_tag = threads_ctx[tid].vcpu.gpr[dst][1];
 
-  threads_ctx[tid].vcpu.gpr_file[dst][1] =
-      tag_combine(threads_ctx[tid].vcpu.gpr_file[dst][1],
-                  threads_ctx[tid].vcpu.gpr_file[src][0]);
-  threads_ctx[tid].vcpu.gpr_file[src][0] = tmp_tag;
+  threads_ctx[tid].vcpu.gpr[dst][1] = tag_combine(
+      threads_ctx[tid].vcpu.gpr[dst][1], threads_ctx[tid].vcpu.gpr[src][0]);
+  threads_ctx[tid].vcpu.gpr[src][0] = tmp_tag;
 }
 
 static void PIN_FAST_ANALYSIS_CALL _xadd_r2r_opb_lu(THREADID tid, uint32_t dst,
                                                     uint32_t src) {
-  tag_t tmp_tag = threads_ctx[tid].vcpu.gpr_file[dst][0];
+  tag_t tmp_tag = threads_ctx[tid].vcpu.gpr[dst][0];
 
-  threads_ctx[tid].vcpu.gpr_file[dst][0] =
-      tag_combine(threads_ctx[tid].vcpu.gpr_file[dst][0],
-                  threads_ctx[tid].vcpu.gpr_file[src][1]);
-  threads_ctx[tid].vcpu.gpr_file[src][1] = tmp_tag;
+  threads_ctx[tid].vcpu.gpr[dst][0] = tag_combine(
+      threads_ctx[tid].vcpu.gpr[dst][0], threads_ctx[tid].vcpu.gpr[src][1]);
+  threads_ctx[tid].vcpu.gpr[src][1] = tmp_tag;
 }
 
 static void PIN_FAST_ANALYSIS_CALL _xadd_r2r_opb_u(THREADID tid, uint32_t dst,
                                                    uint32_t src) {
-  tag_t tmp_tag = threads_ctx[tid].vcpu.gpr_file[dst][1];
+  tag_t tmp_tag = threads_ctx[tid].vcpu.gpr[dst][1];
 
-  threads_ctx[tid].vcpu.gpr_file[dst][1] =
-      tag_combine(threads_ctx[tid].vcpu.gpr_file[dst][1],
-                  threads_ctx[tid].vcpu.gpr_file[src][1]);
-  threads_ctx[tid].vcpu.gpr_file[src][1] = tmp_tag;
+  threads_ctx[tid].vcpu.gpr[dst][1] = tag_combine(
+      threads_ctx[tid].vcpu.gpr[dst][1], threads_ctx[tid].vcpu.gpr[src][1]);
+  threads_ctx[tid].vcpu.gpr[src][1] = tmp_tag;
 }
 
 static void PIN_FAST_ANALYSIS_CALL _xadd_r2r_opb_l(THREADID tid, uint32_t dst,
                                                    uint32_t src) {
-  tag_t tmp_tag = threads_ctx[tid].vcpu.gpr_file[dst][0];
+  tag_t tmp_tag = threads_ctx[tid].vcpu.gpr[dst][0];
 
-  threads_ctx[tid].vcpu.gpr_file[dst][0] =
-      tag_combine(threads_ctx[tid].vcpu.gpr_file[dst][0],
-                  threads_ctx[tid].vcpu.gpr_file[src][0]);
-  threads_ctx[tid].vcpu.gpr_file[src][0] = tmp_tag;
+  threads_ctx[tid].vcpu.gpr[dst][0] = tag_combine(
+      threads_ctx[tid].vcpu.gpr[dst][0], threads_ctx[tid].vcpu.gpr[src][0]);
+  threads_ctx[tid].vcpu.gpr[src][0] = tmp_tag;
 }
 
 static void PIN_FAST_ANALYSIS_CALL _xadd_r2r_opw(THREADID tid, uint32_t dst,
                                                  uint32_t src) {
 
-  tag_t dst_tag[] = {threads_ctx[tid].vcpu.gpr_file[dst][0],
-                     threads_ctx[tid].vcpu.gpr_file[dst][1]};
-  tag_t src_tag[] = {threads_ctx[tid].vcpu.gpr_file[src][0],
-                     threads_ctx[tid].vcpu.gpr_file[src][1]};
+  tag_t dst_tag[] = {threads_ctx[tid].vcpu.gpr[dst][0],
+                     threads_ctx[tid].vcpu.gpr[dst][1]};
+  tag_t src_tag[] = {threads_ctx[tid].vcpu.gpr[src][0],
+                     threads_ctx[tid].vcpu.gpr[src][1]};
 
-  threads_ctx[tid].vcpu.gpr_file[dst][0] = tag_combine(dst_tag[0], src_tag[0]);
-  threads_ctx[tid].vcpu.gpr_file[dst][1] = tag_combine(dst_tag[1], src_tag[1]);
-  threads_ctx[tid].vcpu.gpr_file[src][0] = dst_tag[0];
-  threads_ctx[tid].vcpu.gpr_file[src][1] = dst_tag[1];
+  threads_ctx[tid].vcpu.gpr[dst][0] = tag_combine(dst_tag[0], src_tag[0]);
+  threads_ctx[tid].vcpu.gpr[dst][1] = tag_combine(dst_tag[1], src_tag[1]);
+  threads_ctx[tid].vcpu.gpr[src][0] = dst_tag[0];
+  threads_ctx[tid].vcpu.gpr[src][1] = dst_tag[1];
 }
 
 static void PIN_FAST_ANALYSIS_CALL _xadd_m2r_opb_u(THREADID tid, uint32_t src,
                                                    ADDRINT dst) {
-  tag_t src_tag = threads_ctx[tid].vcpu.gpr_file[src][1];
+  tag_t src_tag = threads_ctx[tid].vcpu.gpr[src][1];
   tag_t dst_tag = tag_dir_getb(tag_dir, dst);
 
-  threads_ctx[tid].vcpu.gpr_file[src][1] = dst_tag;
+  threads_ctx[tid].vcpu.gpr[src][1] = dst_tag;
   tag_dir_setb(tag_dir, dst, tag_combine(dst_tag, src_tag));
 }
 
 static void PIN_FAST_ANALYSIS_CALL _xadd_m2r_opb_l(THREADID tid, uint32_t src,
                                                    ADDRINT dst) {
-  tag_t src_tag = threads_ctx[tid].vcpu.gpr_file[src][0];
+  tag_t src_tag = threads_ctx[tid].vcpu.gpr[src][0];
   tag_t dst_tag = tag_dir_getb(tag_dir, dst);
 
-  threads_ctx[tid].vcpu.gpr_file[src][0] = dst_tag;
+  threads_ctx[tid].vcpu.gpr[src][0] = dst_tag;
   tag_dir_setb(tag_dir, dst, tag_combine(dst_tag, src_tag));
 }
 
@@ -1232,8 +1223,8 @@ static void PIN_FAST_ANALYSIS_CALL _xadd_m2r_opw(THREADID tid, uint32_t src,
   tag_t src_tag[] = R16TAG(tid, src);
   tag_t dst_tag[] = M16TAG(dst);
 
-  threads_ctx[tid].vcpu.gpr_file[src][0] = dst_tag[0];
-  threads_ctx[tid].vcpu.gpr_file[src][1] = dst_tag[1];
+  threads_ctx[tid].vcpu.gpr[src][0] = dst_tag[0];
+  threads_ctx[tid].vcpu.gpr[src][1] = dst_tag[1];
 
   tag_dir_setb(tag_dir, dst, tag_combine(dst_tag[0], src_tag[0]));
   tag_dir_setb(tag_dir, dst + 1, tag_combine(dst_tag[1], src_tag[1]));
@@ -1244,14 +1235,14 @@ static void PIN_FAST_ANALYSIS_CALL _xadd_m2r_opq(THREADID tid, uint32_t src,
   tag_t src_tag[] = R64TAG(tid, src);
   tag_t dst_tag[] = M64TAG(dst);
 
-  threads_ctx[tid].vcpu.gpr_file[src][0] = dst_tag[0];
-  threads_ctx[tid].vcpu.gpr_file[src][1] = dst_tag[1];
-  threads_ctx[tid].vcpu.gpr_file[src][2] = dst_tag[2];
-  threads_ctx[tid].vcpu.gpr_file[src][3] = dst_tag[3];
-  threads_ctx[tid].vcpu.gpr_file[src][4] = dst_tag[4];
-  threads_ctx[tid].vcpu.gpr_file[src][5] = dst_tag[5];
-  threads_ctx[tid].vcpu.gpr_file[src][6] = dst_tag[6];
-  threads_ctx[tid].vcpu.gpr_file[src][7] = dst_tag[7];
+  threads_ctx[tid].vcpu.gpr[src][0] = dst_tag[0];
+  threads_ctx[tid].vcpu.gpr[src][1] = dst_tag[1];
+  threads_ctx[tid].vcpu.gpr[src][2] = dst_tag[2];
+  threads_ctx[tid].vcpu.gpr[src][3] = dst_tag[3];
+  threads_ctx[tid].vcpu.gpr[src][4] = dst_tag[4];
+  threads_ctx[tid].vcpu.gpr[src][5] = dst_tag[5];
+  threads_ctx[tid].vcpu.gpr[src][6] = dst_tag[6];
+  threads_ctx[tid].vcpu.gpr[src][7] = dst_tag[7];
 
   tag_dir_setb(tag_dir, dst, tag_combine(dst_tag[0], src_tag[0]));
   tag_dir_setb(tag_dir, dst + 1, tag_combine(dst_tag[1], src_tag[1]));
@@ -1268,10 +1259,10 @@ static void PIN_FAST_ANALYSIS_CALL _xadd_m2r_opl(THREADID tid, uint32_t src,
   tag_t src_tag[] = R32TAG(tid, src);
   tag_t dst_tag[] = M32TAG(dst);
 
-  threads_ctx[tid].vcpu.gpr_file[src][0] = dst_tag[0];
-  threads_ctx[tid].vcpu.gpr_file[src][1] = dst_tag[1];
-  threads_ctx[tid].vcpu.gpr_file[src][2] = dst_tag[2];
-  threads_ctx[tid].vcpu.gpr_file[src][3] = dst_tag[3];
+  threads_ctx[tid].vcpu.gpr[src][0] = dst_tag[0];
+  threads_ctx[tid].vcpu.gpr[src][1] = dst_tag[1];
+  threads_ctx[tid].vcpu.gpr[src][2] = dst_tag[2];
+  threads_ctx[tid].vcpu.gpr[src][3] = dst_tag[3];
 
   tag_dir_setb(tag_dir, dst, tag_combine(dst_tag[0], src_tag[0]));
   tag_dir_setb(tag_dir, dst + 1, tag_combine(dst_tag[1], src_tag[1]));
@@ -1636,56 +1627,50 @@ static void PIN_FAST_ANALYSIS_CALL r2m_binary_opl(THREADID tid, ADDRINT dst,
 
 static void PIN_FAST_ANALYSIS_CALL r_clrl4(THREADID tid) {
   for (size_t i = 0; i < 8; i++) {
-    threads_ctx[tid].vcpu.gpr_file[DFT_REG_RDX][i] =
-        tag_traits<tag_t>::cleared_val;
-    threads_ctx[tid].vcpu.gpr_file[DFT_REG_RCX][i] =
-        tag_traits<tag_t>::cleared_val;
-    threads_ctx[tid].vcpu.gpr_file[DFT_REG_RBX][i] =
-        tag_traits<tag_t>::cleared_val;
-    threads_ctx[tid].vcpu.gpr_file[DFT_REG_RAX][i] =
-        tag_traits<tag_t>::cleared_val;
+    threads_ctx[tid].vcpu.gpr[DFT_REG_RDX][i] = tag_traits<tag_t>::cleared_val;
+    threads_ctx[tid].vcpu.gpr[DFT_REG_RCX][i] = tag_traits<tag_t>::cleared_val;
+    threads_ctx[tid].vcpu.gpr[DFT_REG_RBX][i] = tag_traits<tag_t>::cleared_val;
+    threads_ctx[tid].vcpu.gpr[DFT_REG_RAX][i] = tag_traits<tag_t>::cleared_val;
   }
 }
 
 static void PIN_FAST_ANALYSIS_CALL r_clrl2(THREADID tid) {
   for (size_t i = 0; i < 8; i++) {
-    threads_ctx[tid].vcpu.gpr_file[DFT_REG_RDX][i] =
-        tag_traits<tag_t>::cleared_val;
-    threads_ctx[tid].vcpu.gpr_file[DFT_REG_RAX][i] =
-        tag_traits<tag_t>::cleared_val;
+    threads_ctx[tid].vcpu.gpr[DFT_REG_RDX][i] = tag_traits<tag_t>::cleared_val;
+    threads_ctx[tid].vcpu.gpr[DFT_REG_RAX][i] = tag_traits<tag_t>::cleared_val;
   }
 }
 
 static void PIN_FAST_ANALYSIS_CALL r_clrx(THREADID tid, uint32_t reg) {
   for (size_t i = 0; i < 16; i++) {
-    threads_ctx[tid].vcpu.gpr_file[reg][i] = tag_traits<tag_t>::cleared_val;
+    threads_ctx[tid].vcpu.gpr[reg][i] = tag_traits<tag_t>::cleared_val;
   }
 }
 
 static void PIN_FAST_ANALYSIS_CALL r_clrq(THREADID tid, uint32_t reg) {
   for (size_t i = 0; i < 8; i++) {
-    threads_ctx[tid].vcpu.gpr_file[reg][i] = tag_traits<tag_t>::cleared_val;
+    threads_ctx[tid].vcpu.gpr[reg][i] = tag_traits<tag_t>::cleared_val;
   }
 }
 
 static void PIN_FAST_ANALYSIS_CALL r_clrl(THREADID tid, uint32_t reg) {
   for (size_t i = 0; i < 4; i++) {
-    threads_ctx[tid].vcpu.gpr_file[reg][i] = tag_traits<tag_t>::cleared_val;
+    threads_ctx[tid].vcpu.gpr[reg][i] = tag_traits<tag_t>::cleared_val;
   }
 }
 
 static void PIN_FAST_ANALYSIS_CALL r_clrw(THREADID tid, uint32_t reg) {
   for (size_t i = 0; i < 2; i++) {
-    threads_ctx[tid].vcpu.gpr_file[reg][i] = tag_traits<tag_t>::cleared_val;
+    threads_ctx[tid].vcpu.gpr[reg][i] = tag_traits<tag_t>::cleared_val;
   }
 }
 
 static void PIN_FAST_ANALYSIS_CALL r_clrb_u(THREADID tid, uint32_t reg) {
-  threads_ctx[tid].vcpu.gpr_file[reg][1] = tag_traits<tag_t>::cleared_val;
+  threads_ctx[tid].vcpu.gpr[reg][1] = tag_traits<tag_t>::cleared_val;
 }
 
 static void PIN_FAST_ANALYSIS_CALL r_clrb_l(THREADID tid, uint32_t reg) {
-  threads_ctx[tid].vcpu.gpr_file[reg][0] = tag_traits<tag_t>::cleared_val;
+  threads_ctx[tid].vcpu.gpr[reg][0] = tag_traits<tag_t>::cleared_val;
 }
 
 static void PIN_FAST_ANALYSIS_CALL r2r_xfer_opb_ul(THREADID tid, uint32_t dst,
@@ -2474,7 +2459,7 @@ cal(THREADID tid,ADDRINT ins_address, char *str, uint64_t rsp_val){
  }
  LOG("\n");
  stringstream ss1;
- tag_t t = threads_ctx[tid].vcpu.gpr_file[3][0];
+ tag_t t = threads_ctx[tid].vcpu.gpr[3][0];
  t.set(1);
  ss1 << RTAG[3][0];
      LOG("TAG:" + ss1.str() +"\n");
@@ -2684,23 +2669,23 @@ void ins_inspect(INS ins) {
       if (INS_OperandIsMemory(ins, OP_0)) {
         switch (INS_OperandWidth(ins, OP_0)) {
         case MEM_64BIT_LEN:
-          INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)file_tagmap_clrn,
+          INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)tagmap_clrn,
                          IARG_FAST_ANALYSIS_CALL, IARG_MEMORYWRITE_EA,
                          IARG_UINT32, 8, IARG_END);
           break;
         case MEM_LONG_LEN:
-          INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)file_tagmap_clrn,
+          INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)tagmap_clrn,
                          IARG_FAST_ANALYSIS_CALL, IARG_MEMORYWRITE_EA,
                          IARG_UINT32, 4, IARG_END);
           break;
         case MEM_WORD_LEN:
-          INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)file_tagmap_clrn,
+          INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)tagmap_clrn,
                          IARG_FAST_ANALYSIS_CALL, IARG_MEMORYWRITE_EA,
                          IARG_UINT32, 2, IARG_END);
 
           break;
         case MEM_BYTE_LEN:
-          INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)file_tagmap_clrn,
+          INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)tagmap_clrn,
                          IARG_FAST_ANALYSIS_CALL, IARG_MEMORYWRITE_EA,
                          IARG_UINT32, 1, IARG_END);
 
@@ -3251,14 +3236,14 @@ void ins_inspect(INS ins) {
                                  IARG_FAST_ANALYSIS_CALL, IARG_THREAD_ID,
                                  IARG_UINT32, REG_INDX(reg_dst), IARG_END);
     } else
-      INS_InsertPredicatedCall(ins, IPOINT_BEFORE, (AFUNPTR)file_tagmap_clrn,
+      INS_InsertPredicatedCall(ins, IPOINT_BEFORE, (AFUNPTR)tagmap_clrn,
                                IARG_FAST_ANALYSIS_CALL, IARG_MEMORYWRITE_EA,
                                IARG_UINT32, 1, IARG_END);
 
     break;
   case XED_ICLASS_STMXCSR:
     /* propagate tag accordingly */
-    INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)file_tagmap_clrn,
+    INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)tagmap_clrn,
                    IARG_FAST_ANALYSIS_CALL, IARG_MEMORYWRITE_EA, IARG_UINT32, 4,
                    IARG_END);
 
@@ -3282,7 +3267,7 @@ void ins_inspect(INS ins) {
                        IARG_FAST_ANALYSIS_CALL, IARG_THREAD_ID, IARG_UINT32,
                        REG_INDX(reg_dst), IARG_END);
     } else
-      INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)file_tagmap_clrn,
+      INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)tagmap_clrn,
                      IARG_FAST_ANALYSIS_CALL, IARG_MEMORYWRITE_EA, IARG_UINT32,
                      2, IARG_END);
 
@@ -3466,11 +3451,11 @@ INS_InsertCall(ins, IPOINT_BEFORE, AFUNPTR(file_cmp_m2m),
   }
   case XED_ICLASS_CMPSQ: {
     //              	          LOG(INS_Disassemble(ins) + "\n");
-	/*
-    INS_InsertCall(ins, IPOINT_BEFORE, AFUNPTR(file_cmp_m2m),
-                   IARG_FAST_ANALYSIS_CALL, IARG_INST_PTR, IARG_MEMORYREAD2_EA,
-                   IARG_MEMORYREAD_EA, IARG_UINT32, 8, IARG_END);
-	*/
+    /*
+INS_InsertCall(ins, IPOINT_BEFORE, AFUNPTR(file_cmp_m2m),
+               IARG_FAST_ANALYSIS_CALL, IARG_INST_PTR, IARG_MEMORYREAD2_EA,
+               IARG_MEMORYREAD_EA, IARG_UINT32, 8, IARG_END);
+    */
     break;
   }
 
@@ -3872,23 +3857,23 @@ INS_InsertCall(ins, IPOINT_BEFORE, AFUNPTR(file_cmp_m2m),
     } else {
       switch (INS_OperandWidth(ins, OP_0)) {
       case MEM_64BIT_LEN:
-        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)file_tagmap_clrn,
+        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)tagmap_clrn,
                        IARG_FAST_ANALYSIS_CALL, IARG_MEMORYWRITE_EA,
                        IARG_UINT32, 8, IARG_END);
         break;
       case MEM_LONG_LEN:
-        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)file_tagmap_clrn,
+        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)tagmap_clrn,
                        IARG_FAST_ANALYSIS_CALL, IARG_MEMORYWRITE_EA,
                        IARG_UINT32, 4, IARG_END);
         break;
       case MEM_WORD_LEN:
-        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)file_tagmap_clrn,
+        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)tagmap_clrn,
                        IARG_FAST_ANALYSIS_CALL, IARG_MEMORYWRITE_EA,
                        IARG_UINT32, 2, IARG_END);
 
         break;
       case MEM_BYTE_LEN:
-        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)file_tagmap_clrn,
+        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)tagmap_clrn,
                        IARG_FAST_ANALYSIS_CALL, IARG_MEMORYWRITE_EA,
                        IARG_UINT32, 1, IARG_END);
         break;
@@ -3922,19 +3907,19 @@ INS_InsertCall(ins, IPOINT_BEFORE, AFUNPTR(file_cmp_m2m),
 
     break;
   case XED_ICLASS_PUSHF:
-    INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)file_tagmap_clrn,
+    INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)tagmap_clrn,
                    IARG_FAST_ANALYSIS_CALL, IARG_MEMORYWRITE_EA, IARG_UINT32, 2,
                    IARG_END);
 
     break;
   case XED_ICLASS_PUSHFD:
-    INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)file_tagmap_clrn,
+    INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)tagmap_clrn,
                    IARG_FAST_ANALYSIS_CALL, IARG_MEMORYWRITE_EA, IARG_UINT32, 4,
                    IARG_END);
 
     break;
   case XED_ICLASS_PUSHFQ:
-    INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)file_tagmap_clrn,
+    INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)tagmap_clrn,
                    IARG_FAST_ANALYSIS_CALL, IARG_MEMORYWRITE_EA, IARG_UINT32, 8,
                    IARG_END);
 
@@ -3942,43 +3927,43 @@ INS_InsertCall(ins, IPOINT_BEFORE, AFUNPTR(file_cmp_m2m),
   case XED_ICLASS_CALL_NEAR:
     if (INS_OperandIsImmediate(ins, OP_0)) {
       if (INS_OperandWidth(ins, OP_0) == MEM_64BIT_LEN)
-        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)file_tagmap_clrn,
+        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)tagmap_clrn,
                        IARG_FAST_ANALYSIS_CALL, IARG_MEMORYWRITE_EA,
                        IARG_UINT32, 8, IARG_END);
       else if (INS_OperandWidth(ins, OP_0) == MEM_LONG_LEN)
-        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)file_tagmap_clrn,
+        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)tagmap_clrn,
                        IARG_FAST_ANALYSIS_CALL, IARG_MEMORYWRITE_EA,
                        IARG_UINT32, 4, IARG_END);
       else
-        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)file_tagmap_clrn,
+        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)tagmap_clrn,
                        IARG_FAST_ANALYSIS_CALL, IARG_MEMORYWRITE_EA,
                        IARG_UINT32, 2, IARG_END);
     } else if (INS_OperandIsReg(ins, OP_0)) {
       reg_src = INS_OperandReg(ins, OP_0);
       if (REG_is_gr64(reg_src))
-        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)file_tagmap_clrn,
+        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)tagmap_clrn,
                        IARG_FAST_ANALYSIS_CALL, IARG_MEMORYWRITE_EA,
                        IARG_UINT32, 8, IARG_END);
       else if (REG_is_gr32(reg_src))
-        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)file_tagmap_clrn,
+        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)tagmap_clrn,
                        IARG_FAST_ANALYSIS_CALL, IARG_MEMORYWRITE_EA,
                        IARG_UINT32, 4, IARG_END);
       else
-        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)file_tagmap_clrn,
+        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)tagmap_clrn,
                        IARG_FAST_ANALYSIS_CALL, IARG_MEMORYWRITE_EA,
                        IARG_UINT32, 2, IARG_END);
     } else {
 
       if (INS_OperandWidth(ins, OP_0) == MEM_64BIT_LEN)
-        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)file_tagmap_clrn,
+        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)tagmap_clrn,
                        IARG_FAST_ANALYSIS_CALL, IARG_MEMORYWRITE_EA,
                        IARG_UINT32, 8, IARG_END);
       else if (INS_OperandWidth(ins, OP_0) == MEM_LONG_LEN)
-        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)file_tagmap_clrn,
+        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)tagmap_clrn,
                        IARG_FAST_ANALYSIS_CALL, IARG_MEMORYWRITE_EA,
                        IARG_UINT32, 4, IARG_END);
       else
-        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)file_tagmap_clrn,
+        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)tagmap_clrn,
                        IARG_FAST_ANALYSIS_CALL, IARG_MEMORYWRITE_EA,
                        IARG_UINT32, 2, IARG_END);
     }

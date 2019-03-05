@@ -35,13 +35,8 @@
 
 #include "pin.H"
 #include "tagmap.h"
-#include <fstream>
-#include <iostream>
-#include <map>
-#include <set>
 #include <sys/syscall.h>
 #include <unistd.h>
-#include <vector>
 
 //#define CPUID_FEATURE_INFO_EDX_MASK (0xf87ffffe) /* turn off FPU, MMX FXSR SSE
 // SSE2 */
@@ -114,42 +109,20 @@
 #define MAX_NUM_32BIT 0xffffffff
 #define MAX_NUM_64BIT 0xffffffffffffffff
 #define MAX_NUM MAX_NUM_64BIT
-//#define VM_LOW_BOUND	0x09048000
-//#define VM_HIGH_BOUND	0xc0000000
 
-/* all run-time data structure are defined as *_ctx_t,
-   static data structure are defined as *_desc(in other head files)*/
+/*
+ * all run-time data structure are defined as *_ctx_t,
+ *  static data structure are defined as *_desc(in other head files)
+ */
+
 /*
  * virtual CPU (VCPU) context definition;
  * x86/x86_32/i386 arch
  */
-
-extern int limit_offset;
-extern bool mmap_type;
-
-/* Flag to start taint */
-extern int flag;
-
 typedef struct {
-  string name;
-  ADDRINT laddr;
-  BOOL isMain;
-} img_ctx_t;
-
-typedef std::map<ADDRINT, img_ctx_t *> img_map_t;
-
-typedef std::set<ADDRINT> ARRAY_SET_T;
-typedef std::map<ADDRINT, std::set<ADDRINT> *> ARRAY_MAP_T;
-typedef struct {
-  /*
-   * general purpose registers (GPRs)
-   */
-  // TAG_TYPE gpr[GRP_NUM + 1];
-  tag_t gpr_file[GRP_NUM + 1][TAGS_PER_GPR];
+  // general purpose registers (GPRs)
+  tag_t gpr[GRP_NUM + 1][TAGS_PER_GPR];
 } vcpu_ctx_t;
-
-#define LOOP_CTX_TYPE 1
-#define FUNC_CTX_TYPE 2
 
 /*
  * system call context definition
@@ -177,9 +150,6 @@ typedef struct {
   //	TAG_TYPE *ptag;
 } opnd_t;
 
-#define NOCHECK 0 /*setup at ADD,ADC,SUB,SBB before, and check after*/
-#define CHECK 1
-
 /* thread context definition */
 typedef struct {
   vcpu_ctx_t vcpu;           /* VCPU context */
@@ -195,7 +165,6 @@ typedef struct {
 
 /* libdft API */
 int libdft_init(void);
-void libdft_start(void);
 void libdft_die(void);
 
 /* ins API */
@@ -203,11 +172,5 @@ int ins_set_pre(ins_desc_t *, void (*)(INS));
 int ins_clr_pre(ins_desc_t *);
 int ins_set_post(ins_desc_t *, void (*)(INS));
 int ins_clr_post(ins_desc_t *);
-
-/* REG API */
-size_t REG64_INDX(REG);
-size_t REG32_INDX(REG);
-size_t REG16_INDX(REG);
-size_t REG8_INDX(REG);
 
 #endif /* __LIBDFT_API_H__ */

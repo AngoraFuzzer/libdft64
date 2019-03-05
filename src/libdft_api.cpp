@@ -30,54 +30,19 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <assert.h>
-#include <err.h>
-#include <fstream>
-#include <iostream>
-#include <map>
-#include <set>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <string>
-#include <sys/stat.h>
-#include <vector>
-
-#include "branch_pred.h"
 #include "libdft_api.h"
+#include "branch_pred.h"
 #include "libdft_core.h"
-#include "libdft_log.h"
 #include "syscall_desc.h"
-#include "tagmap.h"
-
-/* Flag to start taint */
-int flag = 0;
-int limit_offset;
-bool mmap_type;
+#include "syscall_hook.h"
 
 /* threads context counter */
 static size_t tctx_ct = 0;
-
 /* threads context */
 thread_ctx_t *threads_ctx = NULL;
 
-/* IMG context */
-img_map_t *img_map = NULL;
-
-/* exec entry */
-ADDRINT EXEC_ENTRY = 0;
-
-// PIN_MUTEX ArrayLock;
-// PIN_MUTEX MergeLock;
-
-FILE *fMergeLog;
-
-/* heap descriptors */
-
 /* syscall descriptors */
 extern syscall_desc_t syscall_desc[SYSCALL_MAX];
-
-/* library call descriptors */
 
 /* ins descriptors */
 ins_desc_t ins_desc[XED_ICLASS_LAST];
@@ -122,15 +87,9 @@ static void thread_alloc(THREADID tid, CONTEXT *ctx, INT32 flags, VOID *v) {
     /* success; patch the counter */
     tctx_ct += THREAD_CTX_BLK;
   }
-
-  /*threads_ctx[tid].lowest_rsp = PIN_GetContextReg(ctx,LEVEL_BASE::REG_RSP);
-  threads_ctx[tid].highest_rsp = 0x7fffffffffff;
-  threads_ctx[tid].rid = 0;
-  threads_ctx[tid].vcpu.gpr[DFT_REG_RSP].isPointer = TRUE;
-  threads_ctx[tid].vcpu.gpr[DFT_REG_RSP].base_addr =
-  threads_ctx[tid].lowest_rsp;
-  INIT_LIST_HEAD(&(threads_ctx[tid].rt_stack_head));*/
 }
+
+// thread_free?
 
 /*
  * syscall enter notification (analysis function)
@@ -251,7 +210,6 @@ static void sysexit_save(THREADID tid, CONTEXT *ctx, SYSCALL_STANDARD std,
    * So need to clean the tag of EAX, if it is, the post function should
    * retag EAX
    */
-  // threads_ctx[tid].vcpu.gpr_file[DFT_REG_RAX].dflag = 0;
 
   /*
    * check if we need to save the arguments for that syscall
@@ -298,8 +256,8 @@ static void sysexit_save(THREADID tid, CONTEXT *ctx, SYSCALL_STANDARD std,
              * the length of the change is given by
              * map_args[i]
              */
-            file_tagmap_clrn(threads_ctx[tid].syscall_ctx.arg[i],
-                             syscall_desc[syscall_nr].map_args[i]);
+            tagmap_clrn(threads_ctx[tid].syscall_ctx.arg[i],
+                        syscall_desc[syscall_nr].map_args[i]);
     }
   }
 }
@@ -337,8 +295,8 @@ static void trace_inspect(TRACE trace, VOID *v) {
         ins_desc[ins_indx].pre(ins);
 
       /* analyze the instruction */
-      //        LOG(INS_Disassemble(ins)+ " " +
-      //        StringFromAddrint(INS_Address(ins)) + "\n");
+      // if (is_tainted())
+      // LOGD("%s\n", INS_Disassemble(ins).c_str());
       ins_inspect(ins);
 
       /*
@@ -367,11 +325,6 @@ static inline int thread_ctx_init(void) {
   threads_ctx = new thread_ctx_t[THREAD_CTX_BLK]();
 
   if (unlikely(threads_ctx == NULL)) {
-    ////	if (unlikely((threads_ctx = (thread_ctx_t
-    ///*)calloc(THREAD_CTX_BLK,
-    //						sizeof(thread_ctx_t))) == NULL))
-    //{
-    /* error message */
     fprintf(stderr, "%s:%u", __func__, __LINE__);
     /* failed */
     libdft_die();
@@ -392,8 +345,6 @@ static inline int thread_ctx_init(void) {
   return 0;
 }
 
-void finish(INT32 code, VOID *v) {}
-
 /*
  * initialization of the core tagging engine;
  * it must be called before using everything else
@@ -404,7 +355,6 @@ void finish(INT32 code, VOID *v) {}
  * returns: 0 on success, 1 on error
  */
 int libdft_init() {
-  std::string loadpath;
 
   std::ios::sync_with_stdio(false);
 
@@ -414,11 +364,6 @@ int libdft_init() {
   /* initialize thread contexts; optimized branch */
   if (unlikely(thread_ctx_init()))
     /* thread contexts failed */
-    return 1;
-
-  /* initialize the tagmap; optimized branch */
-  if (unlikely(tagmap_alloc()))
-    /* tagmap initialization failed */
     return 1;
 
   /*
@@ -435,33 +380,11 @@ int libdft_init() {
   /* initialize the ins descriptors */
   (void)memset(ins_desc, 0, sizeof(ins_desc));
 
-  // img_map = new img_map_t();
-  /* Find the executable entry */
-  // IMG_AddInstrumentFunction(img_inspect, NULL);
-
-  /*Register library image instrumentation*/
-  // IMG_AddInstrumentFunction(libcall_img_inspect, 0);
-
-  /* Register library trace instrumentation*/
-  // TRACE_AddInstrumentFunction(libcall_trace_inspect, NULL);
-
   /* register trace_ins() to be called for every trace */
   TRACE_AddInstrumentFunction(trace_inspect, NULL);
 
-  PIN_AddFiniFunction(finish, 0);
-
   /* success */
   return 0;
-}
-
-/*
- * start the execution of the application inside the
- * tag-aware VM; this call be invoked even with
- * running applications (i.e., dynamically)
- */
-void libdft_start(void) {
-  /* start PIN */
-  PIN_StartProgram();
 }
 
 /*
@@ -478,8 +401,6 @@ void libdft_die(void) {
    */
   //	delete[] threads_ctx;
   free(threads_ctx);
-  tagmap_free();
-  LOG("died\n");
   /*
    * detach PIN from the application;
    * the application will continue to execute natively

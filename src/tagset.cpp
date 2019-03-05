@@ -1,4 +1,5 @@
 #include "tagset.h"
+#include "debug.h"
 #include <assert.h>
 #include <cstring>
 #include <iostream>
@@ -112,20 +113,18 @@ std::string TagSet::toString(TagNode *const node) {
   std::string ss = "";
   ss += "{";
   std::vector<tag_seg> tags = find(node);
+  char buf[100];
   for (std::vector<tag_seg>::iterator it = tags.begin(); it != tags.end();
        ++it) {
-    ss += "(";
-    ss += it->begin;
-    ss += ", ";
-    ss += it->end;
-    ss += ")";
+    sprintf(buf, "(%d, %d) ", it->begin, it->end);
+    std::string s(buf);
+    ss += s;
   }
   ss += "}";
   return ss;
 }
 
 TagNode *TagSet::combine(TagNode *node1, TagNode *node2) {
-
   if (!node1) {
     return node2;
   } else if (!node2 || node1 == node2) {

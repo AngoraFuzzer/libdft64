@@ -8,9 +8,9 @@
 #include <stdint.h>
 #include <string>
 #include <vector>
-#ifndef TAG_OFF
-#define TAG_OFF
-// typedef uint32_t tag_off_val;
+
+#ifndef TAG_SEG
+#define TAG_SEG
 typedef uint16_t tag_off;
 
 struct tag_seg {

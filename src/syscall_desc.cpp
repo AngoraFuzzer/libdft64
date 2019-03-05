@@ -37,12 +37,6 @@
  * 	(porto@cs.columbia.edu)
  */
 
-/*
- * TODO:
- * 	- add ioctl() handler
- * 	- add nfsservctl() handler
- */
-
 #include <sys/epoll.h>
 #include <sys/ioctl.h>
 #include <sys/ipc.h>
@@ -62,90 +56,33 @@
 #include <linux/sysctl.h>
 
 #include <err.h>
+#include <linux/mempolicy.h>
 #include <poll.h>
 #include <pthread.h>
 #include <signal.h>
+#include <stdio.h>
 #include <string.h>
+#include <termios.h>
 #include <time.h>
 #include <unistd.h>
 #include <ustat.h>
 
-#include "osutils.H"
 #include "syscall_desc.h"
 #include "tagmap.h"
-#include <linux/mempolicy.h>
 
-#include <stdio.h>
-#include <termios.h>
-
-extern FILE *verbose_log;
-extern FILE *debug_log;
-extern FILE *debug_assemble_log;
 /* threads context */
 extern thread_ctx_t *threads_ctx;
-
-extern std::set<int> fdset;
-extern int flag;
-extern bool mmap_type;
-char buf2[4];
-/* callbacks declaration */
-static void post_read_hook(THREADID tid, syscall_ctx_t *);
-static void post_mmap_hook(THREADID tid, syscall_ctx_t *);
-static void post_munmap_hook(THREADID tid, syscall_ctx_t *);
-
-/*My Modification */
-static void post_open_hook(THREADID tid, syscall_ctx_t *);
-static void post_openat_hook(THREADID tid, syscall_ctx_t *);
-static void post_dup3_hook(THREADID tid, syscall_ctx_t *);
-static void post_dup2_hook(THREADID tid, syscall_ctx_t *);
-static void post_dup_hook(THREADID tid, syscall_ctx_t *);
-static void post_close_hook(THREADID tid, syscall_ctx_t *);
-static void post_pread64_hook(THREADID tid, syscall_ctx_t *);
-
-/* XXX: Latest Intel Pin (3.7) doesn't support pread64 and stat
- * (See $PIN_ROOT/intel64/runtime/pincrt/libc-dynamic.so) */
-ssize_t pread64(int fd, void *buf, size_t nbyte, off64_t offset) {
-  /* Since we must not change the file pointer preserve the value so that
-  we can restore it later.  */
-  int save_errno;
-  ssize_t result;
-  off64_t old_offset = lseek64(fd, 0, SEEK_CUR);
-  if (old_offset == (off64_t)-1)
-    return -1;
-  /* Set to wanted position.  */
-  if (lseek(fd, offset, SEEK_SET) == (off64_t)-1)
-    return -1;
-  /* Write out the data.  */
-  result = read(fd, buf, nbyte);
-  /* Now we have to restore the position.  If this fails we have to
-     return this as an error.  But if the writing also failed we
-     return this error.  */
-  save_errno = errno;
-  if (lseek(fd, old_offset, SEEK_SET) == (off64_t)-1) {
-    if (result == -1)
-      errno = save_errno;
-    return -1;
-  }
-  errno = save_errno;
-  return result;
-}
-
-int stat(const char *name, struct stat *buf) {
-  int result;
-  result = syscall(__NR_stat, name, buf);
-  return result;
-}
 
 /* syscall descriptors */
 syscall_desc_t syscall_desc[SYSCALL_MAX] = {
     /* __NR_read = 0 */
-    {3, 1, 1, {0, 0, 0, 0, 0, 0}, NULL, post_read_hook},
+    {3, 1, 1, {0, 0, 0, 0, 0, 0}, NULL, NULL},
     /* __NR_write = 1 */
     {3, 0, 0, {0, 0, 0, 0, 0, 0}, NULL, NULL},
     /* __NR_open = 2 */
-    {3, 1, 0, {0, 0, 0, 0, 0, 0}, NULL, post_open_hook},
+    {3, 1, 0, {0, 0, 0, 0, 0, 0}, NULL, NULL},
     /* __NR_close = 3 */
-    {1, 1, 0, {0, 0, 0, 0, 0, 0}, NULL, post_close_hook},
+    {1, 1, 0, {0, 0, 0, 0, 0, 0}, NULL, NULL},
     /* __NR_stat = 4 */
     {2, 0, 1, {0, sizeof(struct stat), 0, 0, 0, 0}, NULL, NULL},
     /* __NR_fstat = 5 */
@@ -157,11 +94,11 @@ syscall_desc_t syscall_desc[SYSCALL_MAX] = {
     /* __NR_lseek = 8 */
     {3, 0, 0, {0, 0, 0, 0, 0, 0}, NULL, NULL},
     /* __NR_mmap = 9 */
-    {6, 1, 0, {0, 0, 0, 0, 0, 0}, NULL, post_mmap_hook},
+    {6, 1, 0, {0, 0, 0, 0, 0, 0}, NULL, NULL},
     /* __NR_mprotect = 10 */
     {3, 0, 0, {0, 0, 0, 0, 0, 0}, NULL, NULL},
     /* __NR_munmap = 11 */
-    {2, 1, 0, {0, 0, 0, 0, 0, 0}, NULL, post_munmap_hook},
+    {2, 1, 0, {0, 0, 0, 0, 0, 0}, NULL, NULL},
     /* __NR_brk = 12 */
     {1, 1, 0, {0, 0, 0, 0, 0, 0}, NULL, NULL},
     /* __NR_rt_sigaction = 13 */
@@ -173,7 +110,7 @@ syscall_desc_t syscall_desc[SYSCALL_MAX] = {
     /* __NR_ioctl = 16 */
     {3, 1, 0, {0, 0, 0, 0, 0, 0}, NULL, NULL},
     /* __NR_pread64 = 17 */
-    {4, 1, 1, {0, 0, 0, 0, 0, 0}, NULL, post_pread64_hook},
+    {4, 1, 1, {0, 0, 0, 0, 0, 0}, NULL, NULL},
     /* __NR_pwrite64 = 18 */
     {4, 0, 0, {0, 0, 0, 0, 0, 0}, NULL, NULL},
     /* __NR_readv = 19 */
@@ -209,9 +146,9 @@ syscall_desc_t syscall_desc[SYSCALL_MAX] = {
     /* __NR_shmctl = 31 */
     {3, 0, 1, {0, 0, sizeof(struct shmid_ds), 0, 0, 0}, NULL, NULL},
     /* __NR_dup = 32 */
-    {1, 1, 0, {0, 0, 0, 0, 0, 0}, NULL, post_dup_hook},
+    {1, 1, 0, {0, 0, 0, 0, 0, 0}, NULL, NULL},
     /* __NR_dup2 = 33 */
-    {2, 1, 0, {0, 0, 0, 0, 0, 0}, NULL, post_dup2_hook},
+    {2, 1, 0, {0, 0, 0, 0, 0, 0}, NULL, NULL},
     /* __NR_pause = 34 */
     {0, 0, 0, {0, 0, 0, 0, 0, 0}, NULL, NULL},
     /* __NR_nanosleep = 35 */
@@ -714,7 +651,7 @@ syscall_desc_t syscall_desc[SYSCALL_MAX] = {
     /* __NR_migrate_pages = 256 */
     {4, 0, 0, {0, 0, 0, 0, 0, 0}, NULL, NULL},
     /* __NR_openat = 257 */
-    {4, 1, 0, {0, 0, 0, 0, 0, 0}, NULL, post_openat_hook},
+    {4, 1, 0, {0, 0, 0, 0, 0, 0}, NULL, NULL},
     /* __NR_mkdirat = 258 */
     {3, 0, 0, {0, 0, 0, 0, 0, 0}, NULL, NULL},
     /* __NR_mknodat = 259 */
@@ -800,7 +737,7 @@ syscall_desc_t syscall_desc[SYSCALL_MAX] = {
     /* __NR_epoll_create1 = 291 */
     {1, 0, 0, {0, 0, 0, 0, 0, 0}, NULL, NULL},
     /* __NR_dup3 = 292 */
-    {3, 1, 0, {0, 0, 0, 0, 0, 0}, NULL, post_dup3_hook},
+    {3, 1, 0, {0, 0, 0, 0, 0, 0}, NULL, NULL},
     /* __NR_pipe2 = 293 */
     {2, 0, 1, {sizeof(int), 0, 0, 0, 0, 0}, NULL, NULL},
     /* __NR_inotify_init1 = 294 */
@@ -967,261 +904,4 @@ int syscall_clr_post(syscall_desc_t *desc) {
 
   /* return with success */
   return 0;
-}
-
-/* __NR_(p)read(64) and __NR_readlink post syscall hook */
-static void post_read_hook(THREADID tid, syscall_ctx_t *ctx) {
-  ADDRINT buf = ctx->arg[SYSCALL_ARG1];
-  uint32_t nbytes;
-
-  if (unlikely((ssize_t)ctx->ret <= 0))
-    return;
-
-  nbytes = (uint32_t)ctx->ret;
-
-  int fd = ctx->arg[SYSCALL_ARG0];
-
-  /*std::set<int>::iterator it;
-  for(it=fdset.begin();it!=fdset.end();it++){
-          LOG(decstr(*it) + "\n");
-  }
-  LOG("fdset end\n");*/
-  if (fdset.find(fd) != fdset.end()) {
-    off_t read_offset_start = 0;
-    size_t i = 0;
-    //		flag = 1;
-    /*if(fd == 0){
-
-    }else{
-            read_
-    }*/
-    LOG("Setting taint " + decstr(fd) + " " + decstr(nbytes) + "bytes\n");
-    read_offset_start = lseek(fd, 0, SEEK_CUR);
-    if (unlikely(read_offset_start < 0)) {
-      LOG("Error on lseeking " + decstr(fd) + "\n");
-    }
-    read_offset_start -= nbytes;
-    while (i < nbytes) {
-      // tag_t ts_prev = file_tagmap_getb(buf+i);
-      tag_t t;
-      // FIXME:
-      // t.set(read_offset_start + i);
-      t = 1;
-      tagmap_setb_with_tag(buf + i, t);
-      /*			LOG( "read:tags[" + StringFromAddrint(buf+i) +
-         "] : " + tag_sprint(ts_prev) + " -> " +
-                                      tag_sprint(file_tagmap_getb(buf+i)) + "\n"
-                              );*/
-      i++;
-    }
-  } else {
-    size_t i = 0;
-    while (i < nbytes) {
-      file_tagmap_clrb(buf + i);
-      i++;
-    }
-  }
-
-  //	tagmap_clrn(buf, nbytes);
-}
-
-/* __NR_open post syscall hook */
-static void post_open_hook(THREADID tid, syscall_ctx_t *ctx) {
-  int fd = (int)ctx->ret;
-  LOG("In open\n");
-  const std::string fdn = fdname(fd);
-
-  if (!in_dtracker_whitelist(fdn) && !path_isdir(fdn)) {
-    fdset.insert(fd);
-    flag = 1;
-    LOG("Inserted " + fdn + " " + decstr(fd) + ".\n");
-  } else {
-    LOG("Info ignoring fd " + decstr(fd) + "\n");
-  }
-}
-
-/* __NR_openat post syscall hook */
-static void post_openat_hook(THREADID tid, syscall_ctx_t *ctx) {
-  post_open_hook(tid, ctx);
-}
-
-/* __NR_open post syscall hook */
-static void post_dup3_hook(THREADID tid, syscall_ctx_t *ctx) {
-  int oldfd = (int)ctx->arg[SYSCALL_ARG0];
-  int newfd = (int)ctx->arg[SYSCALL_ARG1];
-  LOG("In dup3\n");
-  if (fdset.find(oldfd) != fdset.end()) {
-    fdset.insert(newfd);
-  }
-}
-
-static void post_dup2_hook(THREADID tid, syscall_ctx_t *ctx) {
-  int oldfd = (int)ctx->arg[SYSCALL_ARG0];
-  int newfd = (int)ctx->arg[SYSCALL_ARG1];
-  LOG("In dup2\n");
-  if (fdset.find(oldfd) != fdset.end()) {
-    fdset.insert(newfd);
-  }
-}
-
-static void post_dup_hook(THREADID tid, syscall_ctx_t *ctx) {
-  int oldfd = (int)ctx->arg[SYSCALL_ARG0];
-  int newfd = (int)ctx->ret;
-  LOG("In dup\n");
-  if (fdset.find(oldfd) != fdset.end() && newfd != -1) {
-    fdset.insert(newfd);
-  }
-}
-
-/* __NR_close post syscall hook */
-static void post_close_hook(THREADID tid, syscall_ctx_t *ctx) {
-  int ret_val = (int)ctx->ret;
-  if (unlikely(ret_val) < 0) {
-    LOG("Error in Close \n");
-    return;
-  }
-  int fd = (int)ctx->arg[SYSCALL_ARG0];
-  LOG("close " + decstr(fd) + "\n");
-  std::set<int>::iterator it = fdset.find(fd);
-  if (it == fdset.end())
-    return;
-  fdset.erase(it);
-}
-
-/* __NR_pread64 post syscall hook */
-static void post_pread64_hook(THREADID tid, syscall_ctx_t *ctx) {
-  if (unlikely((ssize_t)ctx->ret < 0)) {
-    return;
-  }
-  uint32_t nr = (uint32_t)ctx->ret;
-  int fd = (int)ctx->arg[SYSCALL_ARG0];
-  const ADDRINT buf = (ADDRINT)ctx->arg[SYSCALL_ARG1];
-  // const off_t read_offset_start = (off_t)ctx->arg[SYSCALL_ARG3];
-  LOG("pread64 " + decstr(nr) + "\n");
-  if (fdset.find(fd) != fdset.end()) {
-    size_t i = 0;
-    while (i < nr) {
-      // tag_t ts_prev = file_tagmap_getb(buf + i);
-      tag_t t;
-      // FIXME:
-      // t.set(read_offset_start + i);
-      t = 1;
-      tagmap_setb_with_tag(buf + i, t);
-      /*LOG( "pread64:tags[" + StringFromAddrint(buf+i) + "] : " +
-              tag_sprint(ts_prev) + " -> " +
-              tag_sprint(file_tagmap_getb(buf+i)) + "\n"
-      );*/
-      i++;
-    }
-  } else {
-    size_t i = 0;
-    while (i < nr) {
-      file_tagmap_clrb(buf + i);
-      i++;
-    }
-  }
-  //	tagmap_clrn(buf, nr);
-}
-
-/* __NR_mmap post syscall hook */
-static void post_mmap_hook(THREADID tid, syscall_ctx_t *ctx) {
-  /* the map offset */
-  size_t offset = (size_t)ctx->arg[SYSCALL_ARG1];
-
-  /* mmap() was not successful; optimized branch */
-  if (unlikely((void *)ctx->ret == MAP_FAILED))
-    return;
-
-  /* estimate offset; optimized branch */
-  if (unlikely(offset < PAGE_SZ))
-    offset = PAGE_SZ;
-  else
-    offset = offset + PAGE_SZ - (offset % PAGE_SZ);
-
-  /* grow downwards; optimized branch */
-  if (unlikely((int)ctx->arg[SYSCALL_ARG3] & MAP_GROWSDOWN))
-    /* fix starting address */
-    ctx->ret = ctx->ret + offset - 1;
-
-  ADDRINT buf = (ADDRINT)ctx->ret;
-  int fd = (int)ctx->arg[SYSCALL_ARG4];
-  size_t nr = (size_t)ctx->arg[SYSCALL_ARG1];
-  intmax_t _fd_offset = ctx->arg[SYSCALL_ARG5];
-  LOG("In mmap " + decstr(fd) + " " + decstr(_fd_offset) + "\n");
-  if (fd >= 0 && fdset.find(fd) != fdset.end()) {
-    size_t i = 0;
-    off_t offset_start;
-
-    if (mmap_type == 0) {
-      LOG("Lseek \n");
-      offset_start = lseek(fd, 0, SEEK_CUR);
-    } else if (mmap_type == 1) {
-      off_t fsize = lseek(fd, 0, SEEK_END);
-      struct stat st;
-      std::string filename = fdname(fd);
-      if (stat(filename.c_str(), &st) == 0) {
-        LOG("inside fstart " + decstr(st.st_size) + "\n");
-        fsize = st.st_size;
-      }
-      UINT32 i = 0;
-      offset_start = i + _fd_offset;
-      LOG(filename + " " + decstr(fsize) + " " + decstr(offset_start) + " " +
-          decstr(nr) + "\n");
-      if ((UINT32)offset_start > (UINT32)fsize) {
-        int nread = pread64(fd, buf2, (ssize_t)4, 0);
-        LOG(decstr(fd) + " " + decstr(nread) + "\n");
-        char *a = (char *)buf;
-        if (nread == 4) {
-          if (strcmp(buf2, a) == 0) {
-            offset_start = 0;
-          } else {
-            LOG("libdft_die\n");
-            libdft_die();
-          }
-        } else {
-          LOG("libdft_die\n");
-          libdft_die();
-        }
-      }
-    }
-    //		LOG("mmap " + decstr(offset_start) + "\n");
-    while (i < nr) {
-      // tag_t ts = file_tagmap_getb(buf + i);
-      tag_t t;
-      // FIXME:
-      // t.set(offset_start + i);
-      t = 1;
-      tagmap_setb_with_tag(buf + i, t);
-      /*LOG( "mmap:tags[" + StringFromAddrint(buf+i) + "] : " +
-             tag_sprint(t) + " -> " + tag_sprint(file_tagmap_getb(buf+i)) + "\n"
-      );*/
-      i++;
-    }
-  } else {
-    // if(fd >= 0){
-    size_t i = 0;
-    while (i < nr) {
-      file_tagmap_clrb(buf + i);
-      i++;
-    }
-    //}
-  }
-
-  /* emulate the clear_tag() call */
-  //	tagmap_clrn((size_t)ctx->ret, offset);
-
-  // threads_ctx[tid].vcpu.gpr[DFT_REG_EAX][0].flag = POINTER_MASK;
-  // tagmap_setb_flag(ctx->ret, VALUE_MASK, ALL_MASK);
-}
-
-static void post_munmap_hook(THREADID tid, syscall_ctx_t *ctx) {
-  if (ctx->ret < 0) {
-    LOG("munmap failed\n");
-    return;
-  }
-  size_t len = (size_t)ctx->arg[SYSCALL_ARG1];
-  ADDRINT buf = (ADDRINT)ctx->arg[SYSCALL_ARG0];
-  for (size_t i = 0; i < len; i++) {
-    file_tagmap_clrb(buf + i);
-  }
 }

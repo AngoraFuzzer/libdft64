@@ -16,6 +16,8 @@ RUN wget http://software.intel.com/sites/landingpage/pintool/downloads/${PIN_TAR
 # COPY . libdft
 # WORKDIR libdft
 # RUN make
+COPY ./env.init /opt/
 
 VOLUME ["/data"]
 WORKDIR /
+ENTRYPOINT [ "/opt/env.init" ]

@@ -30,13 +30,14 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-
-#include "../src/branch_pred.h"
-#include "../src/libdft_api.h"
+#include "branch_pred.h"
+#include "libdft_api.h"
 #include "pin.H"
 #include "syscall_desc.h"
+#include "syscall_hook.h"
+
+#include <stdio.h>
+#include <stdlib.h>
 
 /*
  * DummyTool (i.e, libdft)
@@ -57,6 +58,7 @@ int main(int argc, char **argv) {
     /* failed */
     goto err;
 
+  hook_file_syscall();
   /* start Pin */
   PIN_StartProgram();
 

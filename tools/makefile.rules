@@ -24,7 +24,7 @@
 TEST_TOOL_ROOTS := 
 
 # This defines the tests to be run that were not already defined in TEST_TOOL_ROOTS.
-TEST_ROOTS := 
+TEST_ROOTS := test_mini
 
 # This defines the tools which will be run during the the tests, and were not already defined in
 # TEST_TOOL_ROOTS.
@@ -39,7 +39,7 @@ TOOL_ROOTS := nullpin libdft track #libdft-dta
 SA_TOOL_ROOTS :=
 
 # This defines all the applications that will be run during the tests.
-APP_ROOTS := 
+APP_ROOTS := mini_test
 
 # This defines any additional object files that need to be compiled.
 OBJECT_ROOTS := 
@@ -48,20 +48,12 @@ OBJECT_ROOTS :=
 DLL_ROOTS :=
 
 # This defines any static libraries (archives), that need to be built.
-LIB_ROOTS :=
+LIB_ROOTS := 
 
 ###### Place architecture-specific definitions here ######
 
 # Place ia32-specific definitions here if they apply to all supported operating systems.
 ifeq ($(TARGET),ia32)
-    TEST_TOOL_ROOTS +=
-    TEST_ROOTS +=
-    TOOL_ROOTS +=
-    SA_TOOL_ROOTS +=
-    APP_ROOTS +=
-    OBJECT_ROOTS +=
-    DLL_ROOTS +=
-    LIB_ROOTS +=
     TOOL_CXXFLAGS += -m32 
     LIBDFT_INC_PATH	= $(realpath ../src32/)
     LIBDFT_PATH	= $(realpath ../src32/obj-ia32/)
@@ -69,14 +61,6 @@ endif
 
 # Place intel64-specific definitions here if they apply to all supported operating systems.
 ifeq ($(TARGET),intel64)
-    TEST_TOOL_ROOTS +=
-    TEST_ROOTS +=
-    TOOL_ROOTS +=
-    SA_TOOL_ROOTS +=
-    APP_ROOTS +=
-    OBJECT_ROOTS +=
-    DLL_ROOTS +=
-    LIB_ROOTS += 
 	TOOL_CXXFLAGS +=
     LIBDFT_INC_PATH	= $(realpath ../src/)
     LIBDFT_PATH	= $(realpath ../src/obj-intel64/)
@@ -107,5 +91,9 @@ endif
 ###### Special tools' build rules ######
 
 LOGGING_FLAGS = -DNO_PINTOOL_LOG
-TOOL_CXXFLAGS += $(LOGGING_FLAGS) -I$(LIBDFT_INC_PATH) -L$(LIBDFT_PATH) -ldft
-# $(LIBDFT_TAG_FLAGS) 
+TOOL_CXXFLAGS += $(LOGGING_FLAGS) -I$(LIBDFT_INC_PATH) -L$(LIBDFT_PATH)
+TOOL_LIBS += -L$(LIBDFT_PATH) -ldft
+
+INPUT_FILE=cur_input
+test_mini: $(OBJDIR)/track$(PINTOOL_SUFFIX) ${OBJDIR}/mini_test$(EXE_SUFFIX)
+	$(PIN) -t $< -- $(OBJDIR)mini_test$(EXE_SUFFIX)  ${INPUT_FILE}

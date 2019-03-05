@@ -15,7 +15,7 @@ I implemented it for supporting Angora, but it is outdated and not suits for cur
 ## Docker
 ```
 docker build -t libdft ./
-docker run  -v /path-to-dir:/data -it --rm libdft /bin/bash
+docker run --privileged -v /path-to-dir:/data -it --rm libdft /bin/bash
 ```
 
 ## Plan

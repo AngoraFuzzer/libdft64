@@ -32,137 +32,44 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+#include "tagmap.h"
+#include "branch_pred.h"
+#include "debug.h"
+#include "pin.H"
 #include <err.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "branch_pred.h"
-#include "pin.H"
-#include "tagmap.h"
-
-/*
- * tagmap
- *
- * the tagmap is the core data structure in libdft:.
- * It keeps the tag information for the virtual address space
- * of a process. For the 32-bit x86 architecture, it is implemented
- * using a BITMAP_SZ MB bitmap.
- *
- * Every byte that is addressable in the 32-bit virtual address
- * space is represented using one bit on the tagmap.
- */
-// uint8_t *bitmap = NULL;
-// TAG_TYPE ***directory = NULL;
-
-/* For File taint */
 tag_dir_t tag_dir;
 
-/*
- * initialize the tagmap; allocate space
- *
- * returns:	0 on success, 1 on error
- */
-int tagmap_alloc(void) {
-  /*
-   * allocate space for the bitmap;
-   * in GNU/Linux this will result in invoking mmap(2)
-   * since the requested size is greater than 128 KB
-   */
-
-  // MODIFIED: allocate space for the directory structure
-  /*	if (unlikely((directory = (TAG_TYPE
-     ***)calloc(TOP_DIR_SZ,sizeof(TAG_TYPE **))) == NULL)) return 1;
-          //initialize structure
-          memset(directory, 0, TOP_DIR_SZ * sizeof(TAG_TYPE **));*/
-
-  /* return with success */
-  return 0;
-}
-
-/*
- * dispose the tagmap; deallocate its space
- */
-void tagmap_free(void) {
-  /* deallocate the bitmap space */
-  /*	unsigned int i;
-          for (i=0; i<TOP_DIR_SZ; i++)
-                  if (directory[i])
-                          free(directory[i]);
-          free(directory);*/
-}
-
-void alloc_pagetable(ADDRINT addr) {
-  /*	if (!directory[VIRT2PAGETABLE(addr)]){
-                  if (unlikely((directory[VIRT2PAGETABLE(addr)] = (TAG_TYPE
-     **)calloc(PAGETABLE_SZ,sizeof(TAG_TYPE*)))==NULL)){ warn("%s:%u, ,malloc
-     failed %lx", __func__, __LINE__,addr); exit(1);
-                  }
-                  memset(directory[VIRT2PAGETABLE(addr)], 0, PAGETABLE_SZ *
-     sizeof(TAG_TYPE*));
-          }*/
-}
-
-void inline static alloc_tag_page(ADDRINT addr) {
-  /*	alloc_pagetable(addr);
-          if (!directory[VIRT2PAGETABLE(addr)][VIRT2PAGE(addr)]){
-                  if (unlikely((directory[VIRT2PAGETABLE(addr)][VIRT2PAGE(addr)]
-     = (TAG_TYPE *)calloc(PAGE_SIZE,sizeof(TAG_TYPE)))==NULL)){ warn("%s:%u,
-     ,malloc failed %lx", __func__, __LINE__,addr); exit(1);
-                  }
-                  memset(directory[VIRT2PAGETABLE(addr)][VIRT2PAGE(addr)], 0,
-     PAGE_SIZE * sizeof(TAG_TYPE));
-          }*/
-}
-
-/*
- * test wether a address is tagged or not
- *
- * @addr:	the virtual address
- *
- * returns: 0 means no tag, other means tagged
- */
-
-/*
-        Below defined functions are for
-        taint spread from file
-*/
-/*
-        Set taint at addr
-*/
 void PIN_FAST_ANALYSIS_CALL tagmap_setb_with_tag(size_t addr,
                                                  tag_t const &tag) {
   tag_dir_setb(tag_dir, addr, tag);
 }
 
-/*
-        Clear taint at addr
-*/
-void PIN_FAST_ANALYSIS_CALL file_tagmap_clrb(ADDRINT addr) {
+tag_t tagmap_getb(ADDRINT addr) { return tag_dir_getb(tag_dir, addr); }
+
+void PIN_FAST_ANALYSIS_CALL tagmap_clrb(ADDRINT addr) {
   tagmap_setb_with_tag(addr, tag_traits<tag_t>::cleared_val);
 }
 
-/*
-        Clean n taint starting from addr
-*/
-void PIN_FAST_ANALYSIS_CALL file_tagmap_clrn(ADDRINT addr, UINT32 n) {
-  // LOG(StringFromAddrint(addr) + "  " + decstr(n) + "\n");
+void PIN_FAST_ANALYSIS_CALL tagmap_clrn(ADDRINT addr, UINT32 n) {
   ADDRINT i;
   for (i = addr; i < addr + n; i++) {
-    //	LOG(StringFromAddrint(i) + "  ");
-    file_tagmap_clrb(i);
+    tagmap_clrb(i);
   }
-  // LOG("\n");
 }
 
-/*
-        Get taint at addr
-*/
-tag_t file_tagmap_getb(ADDRINT addr) { return tag_dir_getb(tag_dir, addr); }
-
-bool file_tag_testb(ADDRINT addr) {
-  if (addr > 0x7fffffffffff)
-    return 0;
-  return 1;
+tag_t tagmap_getn(ADDRINT addr, unsigned int size) {
+  tag_t ts = tag_traits<tag_t>::cleared_val;
+  for (size_t i = 0; i < size; i++) {
+    const tag_t t = tagmap_getb(addr + i);
+    if (tag_is_empty(t))
+      continue;
+    LOGD("[tagmap_getn] %lu, %s\n", i, tag_sprint(t).c_str());
+    ts = tag_combine(ts, t);
+  }
+  return ts;
 }
