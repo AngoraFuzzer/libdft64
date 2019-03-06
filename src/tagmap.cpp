@@ -35,6 +35,7 @@
 #include "tagmap.h"
 #include "branch_pred.h"
 #include "debug.h"
+#include "libdft_api.h"
 #include "pin.H"
 #include <err.h>
 #include <stdint.h>
@@ -43,16 +44,71 @@
 #include <string.h>
 
 tag_dir_t tag_dir;
+extern thread_ctx_t *threads_ctx;
 
-void PIN_FAST_ANALYSIS_CALL tagmap_setb_with_tag(size_t addr,
-                                                 tag_t const &tag) {
+inline void tag_dir_setb(tag_dir_t &dir, ADDRINT addr, tag_t const &tag) {
+  if (addr > 0x7fffffffffff) {
+    return;
+  }
+  // LOG("Setting tag "+hexstr(addr)+"\n");
+  if (dir.table[VIRT2PAGETABLE(addr)] == NULL) {
+    //  LOG("No tag table for "+hexstr(addr)+" allocating new table\n");
+    tag_table_t *new_table = new (nothrow) tag_table_t();
+    if (new_table == NULL) {
+      LOG("Failed to allocate tag table!\n");
+      libdft_die();
+    }
+    dir.table[VIRT2PAGETABLE(addr)] = new_table;
+  }
+
+  tag_table_t *table = dir.table[VIRT2PAGETABLE(addr)];
+  if ((*table).page[VIRT2PAGE(addr)] == NULL) {
+    //    LOG("No tag page for "+hexstr(addr)+" allocating new page\n");
+    tag_page_t *new_page = new (nothrow) tag_page_t();
+    if (new_page == NULL) {
+      LOG("Failed to allocate tag page!\n");
+      libdft_die();
+    }
+    std::fill(new_page->tag, new_page->tag + PAGE_SIZE,
+              tag_traits<tag_t>::cleared_val);
+    (*table).page[VIRT2PAGE(addr)] = new_page;
+  }
+
+  tag_page_t *page = (*table).page[VIRT2PAGE(addr)];
+  (*page).tag[VIRT2OFFSET(addr)] = tag;
+  if (!tag_is_empty(tag)) {
+    LOGD("[!]Writing tag for %p \n", (void *)addr);
+  }
+}
+
+inline tag_t const *tag_dir_getb_as_ptr(tag_dir_t const &dir, ADDRINT addr) {
+  if (addr > 0x7fffffffffff) {
+    return NULL;
+  }
+  if (dir.table[VIRT2PAGETABLE(addr)]) {
+    tag_table_t *table = dir.table[VIRT2PAGETABLE(addr)];
+    if ((*table).page[VIRT2PAGE(addr)]) {
+      tag_page_t *page = (*table).page[VIRT2PAGE(addr)];
+      if (page != NULL)
+        return &(*page).tag[VIRT2OFFSET(addr)];
+    }
+  }
+  return &tag_traits<tag_t>::cleared_val;
+}
+
+// PIN_FAST_ANALYSIS_CALL
+void tagmap_setb(ADDRINT addr, tag_t const &tag) {
   tag_dir_setb(tag_dir, addr, tag);
 }
 
-tag_t tagmap_getb(ADDRINT addr) { return tag_dir_getb(tag_dir, addr); }
+tag_t tagmap_getb(ADDRINT addr) { return *tag_dir_getb_as_ptr(tag_dir, addr); }
+
+tag_t tagmap_getb_reg(THREADID tid, unsigned int reg_idx, unsigned int off) {
+  return threads_ctx[tid].vcpu.gpr[reg_idx][off];
+}
 
 void PIN_FAST_ANALYSIS_CALL tagmap_clrb(ADDRINT addr) {
-  tagmap_setb_with_tag(addr, tag_traits<tag_t>::cleared_val);
+  tagmap_setb(addr, tag_traits<tag_t>::cleared_val);
 }
 
 void PIN_FAST_ANALYSIS_CALL tagmap_clrn(ADDRINT addr, UINT32 n) {
@@ -62,10 +118,22 @@ void PIN_FAST_ANALYSIS_CALL tagmap_clrn(ADDRINT addr, UINT32 n) {
   }
 }
 
-tag_t tagmap_getn(ADDRINT addr, unsigned int size) {
+tag_t tagmap_getn(ADDRINT addr, unsigned int n) {
   tag_t ts = tag_traits<tag_t>::cleared_val;
-  for (size_t i = 0; i < size; i++) {
+  for (size_t i = 0; i < n; i++) {
     const tag_t t = tagmap_getb(addr + i);
+    if (tag_is_empty(t))
+      continue;
+    LOGD("[tagmap_getn] %lu, %s\n", i, tag_sprint(t).c_str());
+    ts = tag_combine(ts, t);
+  }
+  return ts;
+}
+
+tag_t tagmap_getn_reg(THREADID tid, unsigned int reg_idx, unsigned int n) {
+  tag_t ts = tag_traits<tag_t>::cleared_val;
+  for (size_t i = 0; i < n; i++) {
+    const tag_t t = tagmap_getb_reg(tid, reg_idx, i);
     if (tag_is_empty(t))
       continue;
     LOGD("[tagmap_getn] %lu, %s\n", i, tag_sprint(t).c_str());

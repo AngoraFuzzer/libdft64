@@ -38,16 +38,6 @@
 #include <sys/syscall.h>
 #include <unistd.h>
 
-//#define CPUID_FEATURE_INFO_EDX_MASK (0xf87ffffe) /* turn off FPU, MMX FXSR SSE
-// SSE2 */
-#define CPUID_FEATURE_INFO_EDX_MASK                                            \
-  (0xf87f76ee) /* turn off FPU, MMX FXSR SSE SSE2 */
-#define CPUID_FEATURE_INFO_ECX_MASK                                            \
-  (0xc007cdec) /* turn off FPU, MMX FXSR SSE SSE2 */
-
-#define MAX_ARG_PAGES 32
-#define ARG_STACK_SIZE MAX_ARG_PAGES *PAGE_SIZE
-
 #define SYSCALL_MAX __NR_sched_getattr + 1 /* max syscall number */
 #define SYSCALL_ARG_NUM 6                  /* syscall arguments */
 #define SYSCALL_ARG0 0                     /* 1st argument in syscall */
@@ -106,10 +96,6 @@
 #define GRP_NUM 43      /* general purpose registers */
 #define TAGS_PER_GPR 16 /* general purpose registers */
 
-#define MAX_NUM_32BIT 0xffffffff
-#define MAX_NUM_64BIT 0xffffffffffffffff
-#define MAX_NUM MAX_NUM_64BIT
-
 /*
  * all run-time data structure are defined as *_ctx_t,
  *  static data structure are defined as *_desc(in other head files)
@@ -136,19 +122,6 @@ typedef struct {
   void *aux;                    /* auxiliary data */
   /* 	ADDRINT errno; */       /* error code */
 } syscall_ctx_t;
-
-#define TYPE_IMM 0
-#define TYPE_REG 1
-#define TYPE_MEM 2
-typedef struct {
-  UINT8 type;
-  UINT64 value;
-  union {
-    REG reg;
-    UINT64 addr;
-  };
-  //	TAG_TYPE *ptag;
-} opnd_t;
 
 /* thread context definition */
 typedef struct {

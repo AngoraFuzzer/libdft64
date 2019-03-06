@@ -75,10 +75,6 @@
 #define OFFSET_MASK 0x00000FFFU
 #define PAGETABLE_OFFSET_MASK 0x00FFFFFFU
 
-#define _1BYETE_OFFSET 8
-#define _2BYTE_OFFSET 16
-#define _3BYTE_OFFSET 24
-
 #define VIRT2PAGETABLE(addr) ((addr) >> PAGETABLE_BITS)
 #define VIRT2PAGETABLE_OFFSET(addr)                                            \
   (((addr)&PAGETABLE_OFFSET_MASK) >> PAGE_BITS)
@@ -114,64 +110,12 @@ typedef struct {
   tag_table_t *table[TOP_DIR_SZ];
 } tag_dir_t;
 
-void tagmap_setb_with_tag(size_t addr, tag_t const &tag);
-tag_t tagmap_getb(ADDRINT);
+void tagmap_setb(ADDRINT addr, tag_t const &tag);
+tag_t tagmap_getb(ADDRINT addr);
+tag_t tagmap_getb_reg(THREADID tid, unsigned int reg_idx, unsigned int off);
 tag_t tagmap_getn(ADDRINT addr, unsigned int size);
-// TAG_TYPE* tagmap_get_ref(ADDRINT);
-void tagmap_clrb(ADDRINT);
+tag_t tagmap_getn_reg(THREADID tid, unsigned int reg_idx, unsigned int n);
+void tagmap_clrb(ADDRINT addr);
 void tagmap_clrn(ADDRINT, UINT32);
-
-inline void tag_dir_setb(tag_dir_t &dir, ADDRINT addr, tag_t const &tag) {
-  if (addr > 0x7fffffffffff) {
-    return;
-  }
-  // LOG("Setting tag "+hexstr(addr)+"\n");
-  if (dir.table[VIRT2PAGETABLE(addr)] == NULL) {
-    //  LOG("No tag table for "+hexstr(addr)+" allocating new table\n");
-    tag_table_t *new_table = new (nothrow) tag_table_t();
-    if (new_table == NULL) {
-      LOG("Failed to allocate tag table!\n");
-      libdft_die();
-    }
-    dir.table[VIRT2PAGETABLE(addr)] = new_table;
-  }
-
-  tag_table_t *table = dir.table[VIRT2PAGETABLE(addr)];
-  if ((*table).page[VIRT2PAGE(addr)] == NULL) {
-    //    LOG("No tag page for "+hexstr(addr)+" allocating new page\n");
-    tag_page_t *new_page = new (nothrow) tag_page_t();
-    if (new_page == NULL) {
-      LOG("Failed to allocate tag page!\n");
-      libdft_die();
-    }
-    std::fill(new_page->tag, new_page->tag + PAGE_SIZE,
-              tag_traits<tag_t>::cleared_val);
-    (*table).page[VIRT2PAGE(addr)] = new_page;
-  }
-
-  tag_page_t *page = (*table).page[VIRT2PAGE(addr)];
-  (*page).tag[VIRT2OFFSET(addr)] = tag;
-  // LOG("Writing tag for "+hexstr(addr)+"\n");
-}
-
-inline tag_t const *tag_dir_getb_as_ptr(tag_dir_t const &dir, ADDRINT addr) {
-  // LOG(StringFromAddrint(addr)+"\n");
-  if (addr > 0x7fffffffffff) {
-    return NULL;
-  }
-  if (dir.table[VIRT2PAGETABLE(addr)]) {
-    tag_table_t *table = dir.table[VIRT2PAGETABLE(addr)];
-    if ((*table).page[VIRT2PAGE(addr)]) {
-      tag_page_t *page = (*table).page[VIRT2PAGE(addr)];
-      if (page != NULL)
-        return &(*page).tag[VIRT2OFFSET(addr)];
-    }
-  }
-  return &tag_traits<tag_t>::cleared_val;
-}
-
-inline tag_t tag_dir_getb(tag_dir_t const &dir, ADDRINT addr) {
-  return *tag_dir_getb_as_ptr(dir, addr);
-}
 
 #endif /* __TAGMAP_H__ */

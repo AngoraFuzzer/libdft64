@@ -51,27 +51,15 @@
 #include <sys/uio.h>
 #include <sys/utsname.h>
 
-#include <asm/fcntl.h>
 #include <linux/kexec.h>
 #include <linux/sysctl.h>
-
-#include <err.h>
-#include <linux/mempolicy.h>
 #include <poll.h>
-#include <pthread.h>
-#include <signal.h>
-#include <stdio.h>
-#include <string.h>
-#include <termios.h>
-#include <time.h>
-#include <unistd.h>
-#include <ustat.h>
 
 #include "syscall_desc.h"
 #include "tagmap.h"
 
-/* threads context */
-extern thread_ctx_t *threads_ctx;
+// Linux:  /usr/include/x86_64-linux-gnu/asm/unistd_64.h
+// https://syscalls.kernelgrok.com/
 
 /* syscall descriptors */
 syscall_desc_t syscall_desc[SYSCALL_MAX] = {

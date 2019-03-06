@@ -32,6 +32,7 @@
 
 #include "libdft_api.h"
 #include "branch_pred.h"
+#include "debug.h"
 #include "libdft_core.h"
 #include "syscall_desc.h"
 #include "syscall_hook.h"
@@ -281,6 +282,8 @@ static void trace_inspect(TRACE trace, VOID *v) {
   for (bbl = TRACE_BblHead(trace); BBL_Valid(bbl); bbl = BBL_Next(bbl)) {
     /* traverse all the instructions in the BBL */
     for (ins = BBL_InsHead(bbl); INS_Valid(ins); ins = INS_Next(ins)) {
+      // if (!is_tainted())
+      //  continue;
       /*
        * use XED to decode the instruction and
        * extract its opcode
@@ -296,7 +299,7 @@ static void trace_inspect(TRACE trace, VOID *v) {
 
       /* analyze the instruction */
       // if (is_tainted())
-      // LOGD("%s\n", INS_Disassemble(ins).c_str());
+      // LOGD("[ins] %s\n", INS_Disassemble(ins).c_str());
       ins_inspect(ins);
 
       /*

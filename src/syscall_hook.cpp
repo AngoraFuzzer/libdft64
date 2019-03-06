@@ -4,6 +4,15 @@
 #include "tagmap.h"
 #include <iostream>
 
+extern syscall_desc_t syscall_desc[SYSCALL_MAX];
+extern TagSet tag_set;
+
+// By default.
+#define NUM_FD_SET 5
+static int fuzzing_fd[NUM_FD_SET] = {-1, -1, -1, -1, -1};
+static u32 stdin_read_off = 0;
+static bool tainted = false;
+
 /* XXX: Latest Intel Pin (3.7) doesn't support pread64 and stat
  * (See $PIN_ROOT/intel64/runtime/pincrt/libc-dynamic.so) */
 ssize_t pread64(int fd, void *buf, size_t nbyte, off64_t offset) {
@@ -31,21 +40,6 @@ ssize_t pread64(int fd, void *buf, size_t nbyte, off64_t offset) {
   errno = save_errno;
   return result;
 }
-
-int stat(const char *name, struct stat *buf) {
-  int result;
-  result = syscall(__NR_stat, name, buf);
-  return result;
-}
-
-extern syscall_desc_t syscall_desc[SYSCALL_MAX];
-extern TagSet tag_set;
-
-// By default.
-#define NUM_FD_SET 5
-static int fuzzing_fd[NUM_FD_SET] = {-1, -1, -1, -1, -1};
-static u32 stdin_read_off = 0;
-static bool tainted = false;
 
 bool is_tainted() { return tainted; }
 
@@ -151,7 +145,7 @@ static void post_close_hook(THREADID tid, syscall_ctx_t *ctx) {
   const int fd = ctx->arg[SYSCALL_ARG0];
   if (is_fuzzing_fd(fd)) {
     remove_fuzzing_fd(fd);
-    LOGD("[close] fd: %d(%d) \n", fd, is_fuzzing_fd(fd));
+    LOGD("[close] fd: %d \n", fd);
   }
 }
 
@@ -163,11 +157,10 @@ static void post_read_hook(THREADID tid, syscall_ctx_t *ctx) {
 
   const int fd = ctx->arg[SYSCALL_ARG0];
   const ADDRINT buf = ctx->arg[SYSCALL_ARG1];
+  char *pbuf = (char *)buf;
   size_t count = ctx->arg[SYSCALL_ARG2];
 
   /* taint-source */
-  // fprintf(stderr, "[read] fd: %d(%d) , count: %d/%d \n", fd,
-  // is_fuzzing_fd(fd), count, nr);
   if (is_fuzzing_fd(fd)) {
 
     tainted = true;
@@ -183,7 +176,10 @@ static void post_read_hook(THREADID tid, syscall_ctx_t *ctx) {
       read_off -= nr; // post
     }
 
-    LOGD("[read] fd: %d, offset: %d, size: %lu\n", fd, read_off, nr);
+    LOGD("[read] fd: %d, addr: %p, offset: %d, size: %lu / %lu\n", fd, pbuf,
+         read_off, nr, count);
+
+    LOGD("%d %d %d %d\n", pbuf[30], pbuf[1], pbuf[2], pbuf[2]);
     /* set the tag markings */
     // Attn: use count replace nr
     // But count may be very very large!
@@ -192,7 +188,7 @@ static void post_read_hook(THREADID tid, syscall_ctx_t *ctx) {
     }
     for (unsigned int i = 0; i < count; i++) {
       tag_t t = tag_alloc<tag_t>(read_off + i);
-      tagmap_setb_with_tag(buf + i, t);
+      tagmap_setb(buf + i, t);
       // LOGD("[read] %d, %s\n", i, tag_sprint(t).c_str());
     }
 
@@ -221,7 +217,7 @@ static void post_pread64_hook(THREADID tid, syscall_ctx_t *ctx) {
     /* set the tag markings */
     for (u32 i = 0; i < count; i++) {
       tag_t t = tag_alloc<tag_t>(read_off + i);
-      tagmap_setb_with_tag(buf + i, t);
+      tagmap_setb(buf + i, t);
     }
   } else {
     /* clear the tag markings */
@@ -249,39 +245,12 @@ static void post_mmap_hook(THREADID tid, syscall_ctx_t *ctx) {
     LOGD("[mmap] fd: %d, offset: %ld, size: %lu\n", fd, read_off, nr);
     for (u32 i = 0; i < nr; i++) {
       tag_t t = tag_alloc<tag_t>(read_off + i);
-      tagmap_setb_with_tag(buf + i, t);
+      tagmap_setb(buf + i, t);
     }
   } else {
     tagmap_clrn(buf, nr);
   }
 }
-
-// void *mmap2(void *addr, size_t length, int prot, int flags, int fd, off_t
-// pgoffset); pgoffset: offset of page = *4096 bytes
-/*
-static void post_mmap2_hook(syscall_ctx_t *ctx) {
-  const ADDRINT ret = ctx->ret;
-  const int fd = ctx->arg[SYSCALL_ARG4];
-  const int prot = ctx->arg[SYSCALL_ARG2];
-  // PROT_READ 0x1
-  if ((void *)ret == (void *)-1 || !(prot & 0x1))
-    return;
-  const ADDRINT buf = ctx->arg[SYSCALL_ARG0];
-  const size_t nr = ctx->arg[SYSCALL_ARG1];
-  const off_t read_off = ctx->arg[SYSCALL_ARG5] * 4096;
-  // fprintf(stderr, "[mmap2] fd: %d(%d), addr: %x, readoff: %ld, nr:%d \n", fd,
-  //        is_fuzzing_fd(fd), buf, read_off, nr);
-  if (is_fuzzing_fd(fd)) {
-    tainted = true;
-    for (u32 i = 0; i < nr; i++) {
-      tag_t t = tag_alloc<tag_t>(read_off + i);
-      tagmap_setb_with_tag(buf + i, t);
-    }
-  } else {
-    tagmap_clrn(buf, nr);
-  }
-}
-*/
 
 static void post_munmap_hook(THREADID tid, syscall_ctx_t *ctx) {
   const ADDRINT ret = ctx->ret;
@@ -293,99 +262,6 @@ static void post_munmap_hook(THREADID tid, syscall_ctx_t *ctx) {
   // std::cerr <<"[munmap] addr: " << buf << ", nr: "<< nr << std::endl;
   tagmap_clrn(buf, nr);
 }
-
-/* __NR_mmap post syscall hook */
-/*
-static void post_mmap_hook(THREADID tid, syscall_ctx_t *ctx) {
-  // the map offset
-size_t offset = (size_t)ctx->arg[SYSCALL_ARG1];
-
-// mmap() was not successful; optimized branch
-if (unlikely((void *)ctx->ret == MAP_FAILED))
-  return;
-
-// estimate offset; optimized branch
-if (unlikely(offset < PAGE_SZ))
-  offset = PAGE_SZ;
-else
-  offset = offset + PAGE_SZ - (offset % PAGE_SZ);
-
-// grow downwards; optimized branch
-if (unlikely((int)ctx->arg[SYSCALL_ARG3] & MAP_GROWSDOWN))
-  // fix starting address
-  ctx->ret = ctx->ret + offset - 1;
-
-ADDRINT buf = (ADDRINT)ctx->ret;
-int fd = (int)ctx->arg[SYSCALL_ARG4];
-size_t nr = (size_t)ctx->arg[SYSCALL_ARG1];
-intmax_t _fd_offset = ctx->arg[SYSCALL_ARG5];
-LOG("In mmap " + decstr(fd) + " " + decstr(_fd_offset) + "\n");
-if (fd >= 0 && fdset.find(fd) != fdset.end()) {
-  size_t i = 0;
-  off_t offset_start;
-
-  if (mmap_type == 0) {
-    LOG("Lseek \n");
-    offset_start = lseek(fd, 0, SEEK_CUR);
-  } else if (mmap_type == 1) {
-    off_t fsize = lseek(fd, 0, SEEK_END);
-    struct stat st;
-    std::string filename = fdname(fd);
-    if (stat(filename.c_str(), &st) == 0) {
-      LOG("inside fstart " + decstr(st.st_size) + "\n");
-      fsize = st.st_size;
-    }
-    UINT32 i = 0;
-    offset_start = i + _fd_offset;
-    LOG(filename + " " + decstr(fsize) + " " + decstr(offset_start) + " " +
-        decstr(nr) + "\n");
-    if ((UINT32)offset_start > (UINT32)fsize) {
-      int nread = pread64(fd, buf2, (ssize_t)4, 0);
-      LOG(decstr(fd) + " " + decstr(nread) + "\n");
-      char *a = (char *)buf;
-      if (nread == 4) {
-        if (strcmp(buf2, a) == 0) {
-          offset_start = 0;
-        } else {
-          LOG("libdft_die\n");
-          libdft_die();
-        }
-      } else {
-        LOG("libdft_die\n");
-        libdft_die();
-      }
-    }
-  }
-  //		LOG("mmap " + decstr(offset_start) + "\n");
-  while (i < nr) {
-    // tag_t ts = file_tagmap_getb(buf + i);
-    tag_t t;
-    // FIXME:
-    // t.set(offset_start + i);
-    t = 1;
-    tagmap_setb_with_tag(buf + i, t);
-    // LOG( "mmap:tags[" + StringFromAddrint(buf+i) + "] : " +
-    //       tag_sprint(t) + " -> " + tag_sprint(file_tagmap_getb(buf+i)) + "\n"
-    // );
-    i++;
-  }
-} else {
-  // if(fd >= 0){
-  size_t i = 0;
-  while (i < nr) {
-    file_tagmap_clrb(buf + i);
-    i++;
-  }
-  //}
-}
-
-// emulate the clear_tag() call
-//	tagmap_clrn((size_t)ctx->ret, offset);
-
-// threads_ctx[tid].vcpu.gpr[DFT_REG_EAX][0].flag = POINTER_MASK;
-// tagmap_setb_flag(ctx->ret, VALUE_MASK, ALL_MASK);
-}
-*/
 
 void hook_file_syscall() {
   (void)syscall_set_post(&syscall_desc[__NR_open], post_open_hook);
