@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "branch_pred.h"
+#include "debug.h"
 #include "libdft_api.h"
 #include "libdft_core.h"
 #include "pin.H"
@@ -63,11 +64,24 @@ extern thread_ctx_t *threads_ctx;
         MTAG(ADDR + 12), MTAG(ADDR + 13), MTAG(ADDR + 14), MTAG(ADDR + 15)     \
   }
 
+#define M256TAG(ADDR)                                                          \
+  {                                                                            \
+    MTAG(ADDR), MTAG(ADDR + 1), MTAG(ADDR + 2), MTAG(ADDR + 3),                \
+        MTAG(ADDR + 4), MTAG(ADDR + 5), MTAG(ADDR + 6), MTAG(ADDR + 7),        \
+        MTAG(ADDR + 8), MTAG(ADDR + 9), MTAG(ADDR + 10), MTAG(ADDR + 11),      \
+        MTAG(ADDR + 12), MTAG(ADDR + 13), MTAG(ADDR + 14), MTAG(ADDR + 15),    \
+        MTAG(ADDR + 16), MTAG(ADDR + 17), MTAG(ADDR + 18), MTAG(ADDR + 19),    \
+        MTAG(ADDR + 20), MTAG(ADDR + 21), MTAG(ADDR + 22), MTAG(ADDR + 23),    \
+        MTAG(ADDR + 24), MTAG(ADDR + 25), MTAG(ADDR + 26), MTAG(ADDR + 27),    \
+        MTAG(ADDR + 28), MTAG(ADDR + 29), MTAG(ADDR + 30), MTAG(ADDR + 31),    \
+  }
+
 /* XXX: Latest Intel Pin (3.7) doesn't support INT2STR */
 #define INT2STR(x)                                                             \
   static_cast<std::ostringstream &>((std::ostringstream() << std::dec << x))   \
       .str()
 
+// https://software.intel.com/sites/landingpage/pintool/docs/97619/Pin/html/group__REG__CPU__IA32.html
 size_t REG_INDX(REG reg) {
   if (reg == REG_INVALID())
     return GRP_NUM;
@@ -173,51 +187,67 @@ size_t REG_INDX(REG reg) {
     return DFT_REG_R15;
     break;
   case REG_XMM0:
+  case REG_YMM0:
     return DFT_REG_XMM0;
     break;
   case REG_XMM1:
+  case REG_YMM1:
     return DFT_REG_XMM1;
     break;
   case REG_XMM2:
+  case REG_YMM2:
     return DFT_REG_XMM2;
     break;
   case REG_XMM3:
+  case REG_YMM3:
     return DFT_REG_XMM3;
     break;
   case REG_XMM4:
+  case REG_YMM4:
     return DFT_REG_XMM4;
     break;
   case REG_XMM5:
+  case REG_YMM5:
     return DFT_REG_XMM5;
     break;
   case REG_XMM6:
+  case REG_YMM6:
     return DFT_REG_XMM6;
     break;
   case REG_XMM7:
+  case REG_YMM7:
     return DFT_REG_XMM7;
     break;
   case REG_XMM8:
+  case REG_YMM8:
     return DFT_REG_XMM8;
     break;
   case REG_XMM9:
+  case REG_YMM9:
     return DFT_REG_XMM9;
     break;
   case REG_XMM10:
+  case REG_YMM10:
     return DFT_REG_XMM10;
     break;
   case REG_XMM11:
+  case REG_YMM11:
     return DFT_REG_XMM11;
     break;
   case REG_XMM12:
+  case REG_YMM12:
     return DFT_REG_XMM12;
     break;
   case REG_XMM13:
+  case REG_YMM13:
     return DFT_REG_XMM13;
     break;
   case REG_XMM14:
+  case REG_YMM14:
     return DFT_REG_XMM14;
     break;
   case REG_XMM15:
+  case REG_YMM15:
     return DFT_REG_XMM15;
     break;
   case REG_MM0:
@@ -1142,8 +1172,8 @@ static void PIN_FAST_ANALYSIS_CALL _lea_r2r_opl(ADDRINT ins_address,
   RTAG(tid)[dst][3] = tag_combine(base_tag[3], idx_tag[3]);
 }
 
-static void PIN_FAST_ANALYSIS_CALL r2r_ternary_opb_u(THREADID tid,
-                                                     uint32_t src) {
+static void PIN_FAST_ANALYSIS_CALL r2r_trnary_opb_u(THREADID tid,
+                                                    uint32_t src) {
   tag_t tmp_tag = RTAG(tid)[src][1];
 
   RTAG(tid)[DFT_REG_RAX][0] = tag_combine(RTAG(tid)[DFT_REG_RAX][0], tmp_tag);
@@ -1710,6 +1740,16 @@ static void PIN_FAST_ANALYSIS_CALL m2r_xfer_opx(THREADID tid, uint32_t dst,
   for (size_t i = 0; i < 16; i++)
     RTAG(tid)[dst][i] = src_tag[i];
 }
+
+/*
+static void PIN_FAST_ANALYSIS_CALL m2r_xfer_opy(THREADID tid, uint32_t dst,
+                                                ADDRINT src) {
+  tag_t src_tag[] = M256TAG(src);
+
+  for (size_t i = 0; i < 32; i++)
+    RTAG(tid)[dst][i] = src_tag[i];
+}
+*/
 
 static void PIN_FAST_ANALYSIS_CALL m2r_xfer_opl(THREADID tid, uint32_t dst,
                                                 ADDRINT src) {
@@ -3458,6 +3498,7 @@ void ins_inspect(INS ins) {
     }
     break;
   case XED_ICLASS_MOVAPS:
+  case XED_ICLASS_MOVAPD:
   case XED_ICLASS_MOVDQA:
   case XED_ICLASS_MOVDQU:
     if (INS_MemoryOperandCount(ins) == 0) {
@@ -3635,6 +3676,14 @@ void ins_inspect(INS ins) {
 
     break;
   default:
+    INT32 ins_ext = INS_Extension(ins);
+    // https://intelxed.github.io/ref-manual/xed-extension-enum_8h.html#ae7b9f64cdf123c5fda22bd10d5db9916
+    if (ins_ext != 0 && ins_ext != 10) {
+      //    if (ins_ext >= XED_EXTENSION_SSE ) {
+      LOGD("[uninstrumented] opcode=%d, ext=%d, %s \n", ins_indx, ins_ext,
+           INS_Disassemble(ins).c_str());
+    }
+
     break;
   }
 }

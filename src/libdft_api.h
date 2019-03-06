@@ -88,13 +88,11 @@
 #define DFT_REG_ST5 40
 #define DFT_REG_ST6 41
 #define DFT_REG_ST7 42
-#define REG_NUM 43
-#define XMM_NUM 35
 #define DFT_REG_HELPER1 0
 #define DFT_REG_HELPER2 1
 #define DFT_REG_HELPER3 2
 #define GRP_NUM 43      /* general purpose registers */
-#define TAGS_PER_GPR 16 /* general purpose registers */
+#define TAGS_PER_GPR 32 /* general purpose registers */
 
 /*
  * all run-time data structure are defined as *_ctx_t,
