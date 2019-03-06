@@ -43,6 +43,21 @@ extern thread_ctx_t *threads_ctx;
         RTAG(tid)[(RIDX)][12], RTAG(tid)[(RIDX)][13], RTAG(tid)[(RIDX)][14],   \
         RTAG(tid)[(RIDX)][15]                                                  \
   }
+#define R256TAG(tid, RIDX)                                                     \
+  {                                                                            \
+    RTAG(tid)                                                                  \
+    [(RIDX)][0], RTAG(tid)[(RIDX)][1], RTAG(tid)[(RIDX)][2],                   \
+        RTAG(tid)[(RIDX)][3], RTAG(tid)[(RIDX)][4], RTAG(tid)[(RIDX)][5],      \
+        RTAG(tid)[(RIDX)][6], RTAG(tid)[(RIDX)][7], RTAG(tid)[(RIDX)][8],      \
+        RTAG(tid)[(RIDX)][9], RTAG(tid)[(RIDX)][10], RTAG(tid)[(RIDX)][11],    \
+        RTAG(tid)[(RIDX)][12], RTAG(tid)[(RIDX)][13], RTAG(tid)[(RIDX)][14],   \
+        RTAG(tid)[(RIDX)][15], RTAG(tid)[(RIDX)][16], RTAG(tid)[(RIDX)][17],   \
+        RTAG(tid)[(RIDX)][18], RTAG(tid)[(RIDX)][19], RTAG(tid)[(RIDX)][20],   \
+        RTAG(tid)[(RIDX)][21], RTAG(tid)[(RIDX)][22], RTAG(tid)[(RIDX)][23],   \
+        RTAG(tid)[(RIDX)][24], RTAG(tid)[(RIDX)][25], RTAG(tid)[(RIDX)][26],   \
+        RTAG(tid)[(RIDX)][27], RTAG(tid)[(RIDX)][28], RTAG(tid)[(RIDX)][29],   \
+        RTAG(tid)[(RIDX)][30], RTAG(tid)[(RIDX)][31]                           \
+  }
 
 #define MTAG(ADDR) tagmap_getb((ADDR))
 #define M8TAG(ADDR)                                                            \
@@ -1172,8 +1187,8 @@ static void PIN_FAST_ANALYSIS_CALL _lea_r2r_opl(ADDRINT ins_address,
   RTAG(tid)[dst][3] = tag_combine(base_tag[3], idx_tag[3]);
 }
 
-static void PIN_FAST_ANALYSIS_CALL r2r_trnary_opb_u(THREADID tid,
-                                                    uint32_t src) {
+static void PIN_FAST_ANALYSIS_CALL r2r_ternary_opb_u(THREADID tid,
+                                                     uint32_t src) {
   tag_t tmp_tag = RTAG(tid)[src][1];
 
   RTAG(tid)[DFT_REG_RAX][0] = tag_combine(RTAG(tid)[DFT_REG_RAX][0], tmp_tag);
@@ -1631,6 +1646,45 @@ static void PIN_FAST_ANALYSIS_CALL r2r_xfer_opx(THREADID tid, uint32_t dst,
   RTAG(tid)[dst][15] = src_tag[15];
 }
 
+static void PIN_FAST_ANALYSIS_CALL r2r_xfer_opy(THREADID tid, uint32_t dst,
+                                                uint32_t src) {
+  tag_t src_tag[] = R256TAG(tid, src);
+
+  RTAG(tid)[dst][0] = src_tag[0];
+  RTAG(tid)[dst][1] = src_tag[1];
+  RTAG(tid)[dst][2] = src_tag[2];
+  RTAG(tid)[dst][3] = src_tag[3];
+  RTAG(tid)[dst][4] = src_tag[4];
+  RTAG(tid)[dst][5] = src_tag[5];
+  RTAG(tid)[dst][6] = src_tag[6];
+  RTAG(tid)[dst][7] = src_tag[7];
+  RTAG(tid)[dst][8] = src_tag[8];
+  RTAG(tid)[dst][9] = src_tag[9];
+  RTAG(tid)[dst][10] = src_tag[10];
+  RTAG(tid)[dst][11] = src_tag[11];
+  RTAG(tid)[dst][12] = src_tag[12];
+  RTAG(tid)[dst][13] = src_tag[13];
+  RTAG(tid)[dst][14] = src_tag[14];
+  RTAG(tid)[dst][15] = src_tag[15];
+
+  RTAG(tid)[dst][16] = src_tag[16];
+  RTAG(tid)[dst][17] = src_tag[17];
+  RTAG(tid)[dst][18] = src_tag[18];
+  RTAG(tid)[dst][19] = src_tag[19];
+  RTAG(tid)[dst][20] = src_tag[20];
+  RTAG(tid)[dst][21] = src_tag[21];
+  RTAG(tid)[dst][22] = src_tag[22];
+  RTAG(tid)[dst][23] = src_tag[23];
+  RTAG(tid)[dst][24] = src_tag[24];
+  RTAG(tid)[dst][25] = src_tag[25];
+  RTAG(tid)[dst][26] = src_tag[26];
+  RTAG(tid)[dst][27] = src_tag[27];
+  RTAG(tid)[dst][28] = src_tag[28];
+  RTAG(tid)[dst][29] = src_tag[29];
+  RTAG(tid)[dst][30] = src_tag[30];
+  RTAG(tid)[dst][31] = src_tag[31];
+}
+
 static void PIN_FAST_ANALYSIS_CALL r2r_xfer_opl(THREADID tid, uint32_t dst,
                                                 uint32_t src) {
   tag_t src_tag[] = R32TAG(tid, src);
@@ -1738,6 +1792,14 @@ static void PIN_FAST_ANALYSIS_CALL m2r_xfer_opx(THREADID tid, uint32_t dst,
   tag_t src_tag[] = M128TAG(src);
 
   for (size_t i = 0; i < 16; i++)
+    RTAG(tid)[dst][i] = src_tag[i];
+}
+
+static void PIN_FAST_ANALYSIS_CALL m2r_xfer_opy(THREADID tid, uint32_t dst,
+                                                ADDRINT src) {
+  tag_t src_tag[] = M256TAG(src);
+
+  for (size_t i = 0; i < 32; i++)
     RTAG(tid)[dst][i] = src_tag[i];
 }
 
@@ -1880,6 +1942,14 @@ static void PIN_FAST_ANALYSIS_CALL r2m_xfer_opx(THREADID tid, ADDRINT dst,
   tag_t src_tag[] = R128TAG(tid, src);
 
   for (size_t i = 0; i < 16; i++)
+    tagmap_setb(dst + i, src_tag[i]);
+}
+
+static void PIN_FAST_ANALYSIS_CALL r2m_xfer_opy(THREADID tid, ADDRINT dst,
+                                                uint32_t src) {
+  tag_t src_tag[] = R256TAG(tid, src);
+
+  for (size_t i = 0; i < 32; i++)
     tagmap_setb(dst + i, src_tag[i]);
 }
 
@@ -3497,10 +3567,13 @@ void ins_inspect(INS ins) {
                        IARG_END);
     }
     break;
+    // FIXME:
   case XED_ICLASS_MOVAPS:
   case XED_ICLASS_MOVAPD:
   case XED_ICLASS_MOVDQA:
   case XED_ICLASS_MOVDQU:
+  case XED_ICLASS_MOVUPS:
+  case XED_ICLASS_MOVUPD:
     if (INS_MemoryOperandCount(ins) == 0) {
       reg_dst = INS_OperandReg(ins, OP_0);
       reg_src = INS_OperandReg(ins, OP_1);
@@ -3516,6 +3589,28 @@ void ins_inspect(INS ins) {
     } else {
       reg_src = INS_OperandReg(ins, OP_1);
       INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)r2m_xfer_opx,
+                     IARG_FAST_ANALYSIS_CALL, IARG_THREAD_ID,
+                     IARG_MEMORYWRITE_EA, IARG_UINT32, REG_INDX(reg_src),
+                     IARG_END);
+    }
+    break;
+
+  case XED_ICLASS_VMOVDQU:
+    if (INS_MemoryOperandCount(ins) == 0) {
+      reg_dst = INS_OperandReg(ins, OP_0);
+      reg_src = INS_OperandReg(ins, OP_1);
+      INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)r2r_xfer_opy,
+                     IARG_FAST_ANALYSIS_CALL, IARG_THREAD_ID, IARG_UINT32,
+                     REG_INDX(reg_dst), IARG_UINT32, REG_INDX(reg_dst),
+                     IARG_END);
+    } else if (INS_OperandIsReg(ins, OP_0)) {
+      reg_dst = INS_OperandReg(ins, OP_0);
+      INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)m2r_xfer_opy,
+                     IARG_FAST_ANALYSIS_CALL, IARG_THREAD_ID, IARG_UINT32,
+                     REG_INDX(reg_dst), IARG_MEMORYREAD_EA, IARG_END);
+    } else {
+      reg_src = INS_OperandReg(ins, OP_1);
+      INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)r2m_xfer_opy,
                      IARG_FAST_ANALYSIS_CALL, IARG_THREAD_ID,
                      IARG_MEMORYWRITE_EA, IARG_UINT32, REG_INDX(reg_src),
                      IARG_END);
