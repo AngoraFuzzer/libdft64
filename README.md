@@ -8,7 +8,7 @@ These code in src directory is modified from [VUzzer64](https://github.com/vusec
 - Support Intel 64 bit platform
 - Use Angora's taint store structure.
 
-## Contribution
+## Contributing guidance
 As [TaintInduce](https://taintinduce.github.io/) mentioned, libdft exists the soundness and completeness probelm.
 - The taint propagation rules may be wrong.
 - It only supports the basic instructions, and there are many other instructions it need to support.
@@ -103,9 +103,9 @@ pin -follow_execv -t ~/libdft/tools/nullpin.so -- <executable>
     *Kangkook Jee, Georgios Portokalidis, Vasileios P. Kemerlis, Soumyadeep Ghosh, David I. August, and Angelos D. Keromytis.*
     In Proceedings of the *19th Internet Society (ISOC) Symposium on Network and Distributed System Security (NDSS)*. February 2012, San Diego, CA.
 
-  * **[Angora: Efficient Fuzzing by Principled Search][3]** In Proceedings of the *IEEE Symposium on Security and Privacy (SP). San Francisco*, CA, May 2123, 2018.
+  * **[Angora: Efficient Fuzzing by Principled Search][3]** In Proceedings of the *IEEE Symposium on Security and Privacy (SP). San Francisco*, CA, May 2018.
 
-  * **[VUzzer: Application-aware Evolutionary Fuzzing][4]** In Proceedings of the *Internet Society (ISOC) Symposium on Network and Distributed System Security (NDSS)*. Feb. 2017.
+  * **[VUzzer: Application-aware Evolutionary Fuzzing][4]** In Proceedings of the *Internet Society (ISOC) Symposium on Network and Distributed System Security (NDSS)*. Feb 2017.
 
 [1]: http://nsl.cs.columbia.edu/papers/2012/libdft.vee12.pdf
 [2]: http://nsl.cs.columbia.edu/papers/2012/tfa.ndss12.pdf
