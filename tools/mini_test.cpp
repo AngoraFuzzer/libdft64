@@ -35,52 +35,29 @@ int main(int argc, char **argv) {
   }
   int len = 20;
   // dfsan_read_label(&(len), sizeof *buf);
-  printf("buf before addr: %p\n", buf);
   ret = fread(buf, sizeof *buf, len, fp);
-  printf("buf after addr: %p\n", buf);
-  __libdft_get_taint(buf);
 
-  /*
-    fclose(fp);
-    // printf("len is :%d\n", len);
-    if (ret < len) {
-      // printf("input fail \n");
-      return 0;
-    }
+  fclose(fp);
+  // printf("len is :%d\n", len);
+  if (ret < len) {
+    // printf("input fail \n");
+    return 0;
+  }
 
-    uint16_t x = 0;
-    __libdft_set_taint(buf, 1);
-    __libdft_set_taint(buf + 1, 2);
-    __libdft_set_taint(buf + 2, 3);
-    __libdft_set_taint(buf + 5, 5);
-    memcpy(&x, buf + 1, 2); // x 1 - 2
+  uint64_t m = 0;
+  __libdft_set_taint(&m, 1);
+  __libdft_set_taint(&m + 1, 2);
+  __libdft_get_taint(&m);
+  __libdft_getval_taint(m);
 
-    printf("x addr: %p\n", &x);
-    __libdft_get_taint(&x);
+  uint16_t x = 0;
+  __libdft_get_taint(&x);
+  memcpy(&x, buf + 1, 2); // x 1 - 2
+  __libdft_get_taint(&x);
+  __libdft_getval_taint(x);
 
-    uint64_t y = x + 2;
-    __libdft_get_taint(&y);
-    __libdft_getval_taint(y);
-    // foo(y);
+  uint64_t y = x + 2;
+  __libdft_getval_taint(y);
 
-    int32_t y = 0;
-    int32_t z = 0;
-    uint32_t a = 0;
-
-    memcpy(&y, buf + 4, 4); // y 4 - 7
-
-    memcpy(&z, buf + 10, 4); // 10 - 13
-    memcpy(&a, buf + 14, 4); // 14 - 17
-
-    __libdft_get_taint(y);
-    __libdft_get_taint(z);
-    __libdft_get_taint(a);
-
-    if (x == 12300 && z == -100000005 && y == 987654321 && a == 123456789) {
-
-      printf("hey, you hit it \n");
-      abort();
-    }
-    */
   return 0;
 }

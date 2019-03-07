@@ -3773,6 +3773,7 @@ void ins_inspect(INS ins) {
   default:
     INT32 ins_ext = INS_Extension(ins);
     // https://intelxed.github.io/ref-manual/xed-extension-enum_8h.html#ae7b9f64cdf123c5fda22bd10d5db9916
+    // INT32 num_op = INS_OperandCount(ins);
     if (ins_ext != 0 && ins_ext != 10) {
       //    if (ins_ext >= XED_EXTENSION_SSE ) {
       LOGD("[uninstrumented] opcode=%d, ext=%d, %s \n", ins_indx, ins_ext,
