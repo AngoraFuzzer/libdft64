@@ -37,24 +37,6 @@
 #include "tag_traits.h"
 #include <utility>
 
-#define FLAG_TYPE uint8_t
-
-// Code tag mask
-#define FUNC_ENTRY_MASK 0x1
-#define FUNC_EXIT_MASK 0x2
-#define LOOP_ENTRY_MASK 0x3
-#define LOOP_BODY_MASK 0x4
-#define LOOP_EXIT_MASK 0x8
-
-// Data tag mask
-#define POINTER_MASK 0x1
-#define ACCESS_MASK 0x2
-#define READ_MASK 0x4
-#define WRITE_MASK 0x8
-#define ARRAY_ELEMENT_MASK 0x10
-
-#define VALUE_ID 0
-
 /*
  * the bitmap size in bytes
  */
@@ -63,15 +45,6 @@
 #define TOP_DIR_SZ 0x800000
 #define PAGETABLE_SZ 0X1000
 #define PAGETABLE_BITS 24
-
-#define BYTE_MASK 0x01U     /* byte mask; 1 bit */
-#define WORD_MASK 0x0003U   /* word mask; 2 sequential bits */
-#define LONG_MASK 0x000FU   /* long mask; 4 sequential bits */
-#define QUAD_MASK 0x00FFU   /* quad mask; 8 sequential bits */
-#define _3BYTE_MASK 0x0007U /* 3 bytes mask; 3 sequential bits */
-#define _5BYTE_MASK 0x001FU /* 5 bytes mask; 5 sequential bits */
-#define _6BYTE_MASK 0x003FU /* 6 bytes mask; 6 sequential bits */
-#define _7BYTE_MASK 0x007FU /* 7 bytes mask; 7 sequential bits */
 #define OFFSET_MASK 0x00000FFFU
 #define PAGETABLE_OFFSET_MASK 0x00FFFFFFU
 
@@ -84,14 +57,6 @@
 
 #define ALIGN_OFF_MAX 8 /* max alignment offset */
 #define ASSERT_FAST 32  /* used in comparisons  */
-
-#define TEST_MASK(src, mask) ((src & (mask)) == (mask))
-#define SET_MASK(src, mask) (src | mask)
-#define CLR_MASK(src, mask) (src & (~(mask)))
-
-/* for eflag */
-#define OVERFLOW_BITS 11
-#define OVERFLOW_MASK (1 << OVERFLOW_BITS)
 
 extern void libdft_die();
 

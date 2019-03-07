@@ -59,8 +59,6 @@ public:
   // TagNode* untainted();
   TagNode *insert(tag_off pos);
   void _insert_block(tag_off off, uint32_t size);
-  void mem_read(TagNode *const *tag, uint32_t size);
-  void frac_tagvec(std::vector<tag_seg> &tag_vec);
   static TagNode *combine(TagNode *node1, TagNode *node2);
   static const std::vector<tag_seg> find(TagNode *node);
   static std::string toString(TagNode *const node);

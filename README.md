@@ -1,16 +1,12 @@
 # libdft: Practical Dynamic Data Flow Tracking
 
-VUzze64 has implemented 64bit libdft, and it supports pin3.x now! and it supports more instructions!!!
+These code in src directory is modified from [VUzzer64](https://github.com/vusec/vuzzer64).
 
------
-
-Pin3.x support for libdft 32bit.
-
-It can be compiled successfully now.
-
-Warning: I have not tested and documented now. 
-
-I implemented it for supporting Angora, but it is outdated and not suits for current version Angora.
+## Contribution
+As [TaintInduce](https://taintinduce.github.io/) mentioned, libdft exists the soundness and completeness probelm.
+- The taint propagation rules may be wrong.
+- It only supports the basic instructions, and there are many other instructions it need to support.
+If you want to contribute to this, please read and modify the code in `src/libdft_core.cpp`, and pull requests on github for us.
 
 ## Docker
 ```
@@ -18,13 +14,6 @@ docker build -t libdft ./
 docker run --privileged -v /path-to-dir:/data -it --rm libdft /bin/bash
 ```
 
-## Plan
-- Support 64bit.
-- Make the `tests` can be ran under pin3.x
-- Support more instruction.
-
-
----------------------------
 ## Introduction
    Dynamic data flow tracking (DFT) deals with the tagging and tracking of
 "interesting" data as they propagate during program execution. DFT has been
@@ -37,7 +26,6 @@ be used to deliver DFT-enabled tools that can be applied on unmodified binaries
 running on common operating systems and hardware, thus facilitating research
 and rapid prototyping.
 
----------------------------------------------------------------------
 
 ## Installation & Usage
    libdft relies on [Intel Pin](http://www.pintool.org), which is a dynamic binary
@@ -109,7 +97,6 @@ be specified:
   * `-f [0|1]`: Turn on/off tainting for data originating from files.
   * `-n [0|1]`: Turn on/off tainting for data originating from the network.
 
----------------------------------------------------------------------
 
 ## Research
    Following are some publications that rely on libdft:
