@@ -2,10 +2,17 @@
 
 These code in src directory is modified from [VUzzer64](https://github.com/vusec/vuzzer64).
 
+## Features
+
+- Support Intel Pin 3.x
+- Support Intel 64 bit platform
+- Use Angora's taint store structure.
+
 ## Contribution
 As [TaintInduce](https://taintinduce.github.io/) mentioned, libdft exists the soundness and completeness probelm.
 - The taint propagation rules may be wrong.
 - It only supports the basic instructions, and there are many other instructions it need to support.
+
 If you want to contribute to this, please read and modify the code in `src/libdft_core.cpp`, and pull requests on github for us.
 
 ## Docker
