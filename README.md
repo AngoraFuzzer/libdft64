@@ -92,18 +92,6 @@ pin -follow_execv -t ~/libdft/tools/nullpin.so -- <executable>
      using the `exec(3)` class system calls by the program.
   * `-t`: Specifies the Pin tool to be used.
 
-#### Tool-specific arguments
-  Arguments which are specific to the used Pin tool must be placed after the tool
-name and before `--` in the command line. The supplied `nullpin` and `libdft` tools
-"dummies" and hence take no arguments. For `libdft-dta`, the following arguments can
-be specified:
-
-  * `-l <filename>`: specify a file where alerts and policy violations will be
-    logged.
-  * `-s [0|1]`: Turn on/off tainting for data originating from `stdin`.
-  * `-f [0|1]`: Turn on/off tainting for data originating from files.
-  * `-n [0|1]`: Turn on/off tainting for data originating from the network.
-
 
 ## Research
    Following are some publications that rely on libdft:
@@ -115,5 +103,11 @@ be specified:
     *Kangkook Jee, Georgios Portokalidis, Vasileios P. Kemerlis, Soumyadeep Ghosh, David I. August, and Angelos D. Keromytis.*
     In Proceedings of the *19th Internet Society (ISOC) Symposium on Network and Distributed System Security (NDSS)*. February 2012, San Diego, CA.
 
+  * **[Angora: Efficient Fuzzing by Principled Search][3]** In Proceedings of the *IEEE Symposium on Security and Privacy (SP). San Francisco*, CA, May 2123, 2018.
+
+  * **[VUzzer: Application-aware Evolutionary Fuzzing][4]** In Proceedings of the *Internet Society (ISOC) Symposium on Network and Distributed System Security (NDSS)*. Feb. 2017.
+
 [1]: http://nsl.cs.columbia.edu/papers/2012/libdft.vee12.pdf
 [2]: http://nsl.cs.columbia.edu/papers/2012/tfa.ndss12.pdf
+[3]: https://arxiv.org/abs/1803.01307
+[4]: https://www.cs.vu.nl/~herbertb/download/papers/vuzzer_ndss17.pdf

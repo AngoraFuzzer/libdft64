@@ -24,5 +24,4 @@ libdft has been successfully tested with:
 
   * All Debian GNU/Linux versions starting with v5 (lenny).
     In principle it should also work on any other Linux distribution.
-  * Intel Pin v2.12-v2.14
-  * gcc/g++ 4.4.x-4.9.x
+  * Intel Pin 3.x
