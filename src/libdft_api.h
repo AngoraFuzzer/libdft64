@@ -94,6 +94,13 @@
 #define GRP_NUM 43      /* general purpose registers */
 #define TAGS_PER_GPR 32 /* general purpose registers */
 
+#define X64_ARG0_REG DFT_REG_RDI
+#define X64_ARG1_REG DFT_REG_RSI
+#define X64_ARG2_REG DFT_REG_RDX
+#define X64_ARG3_REG DFT_REG_RCX
+#define X64_ARG4_REG DFT_REG_R8
+#define X64_ARG5_REG DFT_REG_R9
+
 /*
  * all run-time data structure are defined as *_ctx_t,
  *  static data structure are defined as *_desc(in other head files)

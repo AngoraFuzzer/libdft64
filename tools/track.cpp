@@ -12,7 +12,7 @@ VOID TestGetHandler(void *p) {
 }
 
 VOID TestGetValHandler(THREADID tid, uint64_t v) {
-  tag_t t = tagmap_getn_reg(tid, DFT_REG_RDI, 8);
+  tag_t t = tagmap_getn_reg(tid, X64_ARG0_REG, 8);
   LOGD("[PIN][GETVAL] v: %lu, taint: %s\n", v, tag_sprint(t).c_str());
 }
 

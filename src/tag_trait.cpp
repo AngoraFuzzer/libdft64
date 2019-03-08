@@ -22,7 +22,7 @@ template <> uint8_t tag_alloc<uint8_t>(unsigned int offset) {
 /********************************************************
 tag set tags
 ********************************************************/
-extern TagSet tag_set;
+TagSet tag_set;
 
 TagNode *tag_traits<TagNode *>::cleared_val = NULL;
 

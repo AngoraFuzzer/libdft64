@@ -5,7 +5,6 @@
 #include <iostream>
 
 extern syscall_desc_t syscall_desc[SYSCALL_MAX];
-extern TagSet tag_set;
 
 // By default.
 #define NUM_FD_SET 5
@@ -179,7 +178,6 @@ static void post_read_hook(THREADID tid, syscall_ctx_t *ctx) {
     LOGD("[read] fd: %d, addr: %p, offset: %d, size: %lu / %lu\n", fd, pbuf,
          read_off, nr, count);
 
-    LOGD("%d %d %d %d\n", pbuf[30], pbuf[1], pbuf[2], pbuf[2]);
     /* set the tag markings */
     // Attn: use count replace nr
     // But count may be very very large!
