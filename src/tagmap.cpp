@@ -126,8 +126,9 @@ tag_t tagmap_getn(ADDRINT addr, unsigned int n) {
     const tag_t t = tagmap_getb(addr + i);
     if (tag_is_empty(t))
       continue;
-    // LOGD("[tagmap_getn] %lu, %s\n", i, tag_sprint(t).c_str());
+    // LOGD("[tagmap_getn] %lu, ts: %d, %s\n", i, ts, tag_sprint(t).c_str());
     ts = tag_combine(ts, t);
+    // LOGD("t: %d, ts:%d\n", t, ts);
   }
   return ts;
 }
@@ -138,8 +139,9 @@ tag_t tagmap_getn_reg(THREADID tid, unsigned int reg_idx, unsigned int n) {
     const tag_t t = tagmap_getb_reg(tid, reg_idx, i);
     if (tag_is_empty(t))
       continue;
-    // LOGD("[tagmap_getn] %lu, %s\n", i, tag_sprint(t).c_str());
+    // LOGD("[tagmap_getn] %lu, ts: %d, %s\n", i, ts, tag_sprint(t).c_str());
     ts = tag_combine(ts, t);
+    // LOGD("t: %d, ts:%d\n", t, ts);
   }
   return ts;
 }

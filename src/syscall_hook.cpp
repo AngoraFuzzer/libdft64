@@ -187,7 +187,7 @@ static void post_read_hook(THREADID tid, syscall_ctx_t *ctx) {
     for (unsigned int i = 0; i < count; i++) {
       tag_t t = tag_alloc<tag_t>(read_off + i);
       tagmap_setb(buf + i, t);
-      // LOGD("[read] %d, %s\n", i, tag_sprint(t).c_str());
+      // LOGD("[read] %d, lb: %d,  %s\n", i, t, tag_sprint(t).c_str());
     }
 
   } else {

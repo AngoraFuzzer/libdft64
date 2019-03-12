@@ -45,14 +45,13 @@ int main(int argc, char **argv) {
   }
 
   uint64_t m = 0;
-  __libdft_set_taint(&m, 1);
-  __libdft_set_taint(&m + 1, 2);
+  __libdft_set_taint(&m, 8);
   __libdft_get_taint(&m);
   __libdft_getval_taint(m);
 
   uint16_t x = 0;
   __libdft_get_taint(&x);
-  memcpy(&x, buf + 1, 2); // x 1 - 2
+  memcpy(&x, buf + 5, 2); // x 1 - 2
   __libdft_get_taint(&x);
   __libdft_getval_taint(x);
 

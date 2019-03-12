@@ -25,21 +25,21 @@ template <> uint8_t tag_alloc<uint8_t>(unsigned int offset);
 /********************************************************
 tag set tags
 ********************************************************/
-#include "./tagset.h"
+#include "./bdd_tag.h"
 
-typedef TagNode *libdft_tag_set;
+typedef lb_type libdft_bdd_tag;
 
-template <> struct tag_traits<TagNode *> {
-  typedef TagNode *type;
-  static TagNode *cleared_val;
+template <> struct tag_traits<lb_type> {
+  typedef lb_type type;
+  static lb_type cleared_val;
 };
 
-template <> TagNode *tag_combine(TagNode *const &lhs, TagNode *const &rhs);
-// template <> void tag_combine_inplace(TagNode *&lhs, TagNode *const &rhs);
-template <> std::string tag_sprint(TagNode *const &tag);
-template <> TagNode *tag_alloc<TagNode *>(unsigned int offset);
+template <> lb_type tag_combine(lb_type const &lhs, lb_type const &rhs);
+// template <> void tag_combine_inplace(lb_type &lhs, lb_type const &rhs);
+template <> std::string tag_sprint(lb_type const &tag);
+template <> lb_type tag_alloc<lb_type>(unsigned int offset);
 
-std::vector<tag_seg> tag_get(TagNode *);
+std::vector<tag_seg> tag_get(lb_type);
 
 #include "config.h"
 

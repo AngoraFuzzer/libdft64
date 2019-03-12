@@ -8,18 +8,20 @@
 VOID TestGetHandler(void *p) {
   uint64_t v = *((uint64_t *)p);
   tag_t t = tagmap_getn((ADDRINT)p, 8);
-  LOGD("[PIN][GET] addr: %p, v: %lu, taint: %s\n", p, v, tag_sprint(t).c_str());
+  LOGD("[PIN][GET] addr: %p, v: %lu, lb: %d, taint: %s\n", p, v, t,
+       tag_sprint(t).c_str());
 }
 
 VOID TestGetValHandler(THREADID tid, uint64_t v) {
   tag_t t = tagmap_getn_reg(tid, X64_ARG0_REG, 8);
-  LOGD("[PIN][GETVAL] v: %lu, taint: %s\n", v, tag_sprint(t).c_str());
+  LOGD("[PIN][GETVAL] v: %lu, lb: %d, taint: %s\n", v, t,
+       tag_sprint(t).c_str());
 }
 
 VOID TestSetHandler(void *p, unsigned int v) {
   tag_t t = tag_alloc<tag_t>(v);
   tagmap_setb((ADDRINT)p, t);
-  LOGD("[PIN][SET] addr: %p, taint: %d\n", p, v);
+  LOGD("[PIN][SET] addr: %p, lb: %d, taint: %d\n", p, t, v);
 }
 
 VOID EntryPoint(VOID *v) {

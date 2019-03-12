@@ -22,20 +22,20 @@ template <> uint8_t tag_alloc<uint8_t>(unsigned int offset) {
 /********************************************************
 tag set tags
 ********************************************************/
-TagSet tag_set;
 
-TagNode *tag_traits<TagNode *>::cleared_val = NULL;
+BDDTag bdd_tag;
+lb_type tag_traits<lb_type>::cleared_val = 0;
 
-template <> TagNode *tag_combine(TagNode *const &lhs, TagNode *const &rhs) {
-  return TagSet::combine(lhs, rhs);
+template <> lb_type tag_combine(lb_type const &lhs, lb_type const &rhs) {
+  return bdd_tag.combine(lhs, rhs);
 }
 
-template <> std::string tag_sprint(TagNode *const &tag) {
-  return TagSet::toString(tag);
+template <> std::string tag_sprint(lb_type const &tag) {
+  return bdd_tag.to_string(tag);
 }
 
-template <> TagNode *tag_alloc<TagNode *>(unsigned int offset) {
-  return tag_set.insert(offset);
+template <> lb_type tag_alloc<lb_type>(unsigned int offset) {
+  return bdd_tag.insert(offset);
 }
 
-std::vector<tag_seg> tag_get(TagNode *t) { return TagSet::find(t); }
+std::vector<tag_seg> tag_get(lb_type t) { return bdd_tag.find(t); }
