@@ -100,6 +100,7 @@
 #define X64_ARG3_REG DFT_REG_RCX
 #define X64_ARG4_REG DFT_REG_R8
 #define X64_ARG5_REG DFT_REG_R9
+#define X64_RET_REG DFT_REG_RAX
 
 /*
  * all run-time data structure are defined as *_ctx_t,

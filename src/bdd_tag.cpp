@@ -6,6 +6,13 @@
 #include <sstream>
 #include <stack>
 
+#define VEC_CAP (1 << 16)
+#define LB_WIDTH BDD_LB_WIDTH
+#define MAX_LB ((1 << LB_WIDTH) - 1)
+#define LB_MASK MAX_LB
+#define LEN_LB BDD_LEN_LB
+#define ROOT 0
+
 BDDTag::BDDTag() {
   nodes.reserve(VEC_CAP);
   nodes.push_back(TagNode(ROOT, 0, 0));
@@ -19,8 +26,6 @@ lb_type BDDTag::alloc_node(lb_type parent, tag_off begin, tag_off end) {
     nodes.push_back(TagNode(parent, begin, end));
     return lb;
   } else {
-    // error
-    exit(1);
     return ROOT;
   }
 }
@@ -101,6 +106,10 @@ lb_type BDDTag::combine(lb_type l1, lb_type l2) {
   if (l2 == 0 || l1 == l2)
     return l1;
 
+  bool has_len_lb = BDD_HAS_LEN_LB(l1) || BDD_HAS_LEN_LB(l2);
+  l1 = l1 & LB_MASK;
+  l2 = l2 & LB_MASK;
+
   if (l1 > l2) {
     lb_type tmp = l2;
     l2 = l1;
@@ -160,14 +169,18 @@ lb_type BDDTag::combine(lb_type l1, lb_type l2) {
     }
   }
 
+  if (has_len_lb) {
+    cur_lb |= LEN_LB;
+  }
+
   return cur_lb;
 }
 
 const std::vector<tag_seg> BDDTag::find(lb_type lb) {
 
+  lb = lb & LB_MASK;
   std::vector<tag_seg> tag_list;
   tag_off last_begin = MAX_LB;
-
   while (lb > 0) {
     if (nodes[lb].seg.begin < last_begin) {
       tag_list.push_back(nodes[lb].seg);
@@ -184,6 +197,8 @@ const std::vector<tag_seg> BDDTag::find(lb_type lb) {
 };
 
 std::string BDDTag::to_string(lb_type lb) {
+
+  lb = lb & LB_MASK;
   std::string ss = "";
   ss += "{";
   std::vector<tag_seg> tags = find(lb);

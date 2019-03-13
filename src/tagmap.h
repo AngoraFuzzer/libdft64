@@ -76,6 +76,8 @@ typedef struct {
 } tag_dir_t;
 
 void tagmap_setb(ADDRINT addr, tag_t const &tag);
+void tagmap_setb_reg(THREADID tid, unsigned int reg_idx, unsigned int off,
+                     tag_t const &tag);
 tag_t tagmap_getb(ADDRINT addr);
 tag_t tagmap_getb_reg(THREADID tid, unsigned int reg_idx, unsigned int off);
 tag_t tagmap_getn(ADDRINT addr, unsigned int size);

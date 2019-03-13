@@ -9,13 +9,12 @@
 #include <string>
 #include <vector>
 
-#define VEC_CAP (1 << 16)
-#define LABEL_WIDTH 22
-#define MAX_LB ((1 << LABEL_WIDTH) - 1)
-#define ROOT 0
+#define BDD_LB_WIDTH 24
+#define BDD_LEN_LB 0xF0000000
+#define BDD_HAS_LEN_LB(lb) (lb >= BDD_LEN_LB)
 
-#ifndef TAG_SEG
-#define TAG_SEG
+#ifndef BDD_TAG_SEG
+#define BDD_TAG_SEG
 typedef uint32_t lb_type;
 typedef uint32_t tag_off;
 

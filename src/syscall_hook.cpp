@@ -161,7 +161,6 @@ static void post_read_hook(THREADID tid, syscall_ctx_t *ctx) {
 
   /* taint-source */
   if (is_fuzzing_fd(fd)) {
-
     tainted = true;
 
     unsigned int read_off = 0;
@@ -184,11 +183,14 @@ static void post_read_hook(THREADID tid, syscall_ctx_t *ctx) {
     if (count > nr + 32) {
       count = nr + 32;
     }
+
     for (unsigned int i = 0; i < count; i++) {
       tag_t t = tag_alloc<tag_t>(read_off + i);
       tagmap_setb(buf + i, t);
       // LOGD("[read] %d, lb: %d,  %s\n", i, t, tag_sprint(t).c_str());
     }
+
+    tagmap_setb_reg(tid, DFT_REG_RAX, 0, BDD_LEN_LB);
 
   } else {
     /* clear the tag markings */
