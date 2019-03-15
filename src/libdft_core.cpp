@@ -3595,6 +3595,7 @@ void ins_inspect(INS ins) {
     }
     break;
 
+  case XED_ICLASS_VMOVDQA:
   case XED_ICLASS_VMOVDQU:
     if (INS_MemoryOperandCount(ins) == 0) {
       reg_dst = INS_OperandReg(ins, OP_0);
@@ -3618,6 +3619,8 @@ void ins_inspect(INS ins) {
     break;
   case XED_ICLASS_MOVD:
   case XED_ICLASS_MOVQ:
+  case XED_ICLASS_VMOVD:
+  case XED_ICLASS_VMOVQ:
     if (INS_MemoryOperandCount(ins) == 0) {
       reg_dst = INS_OperandReg(ins, OP_0);
       reg_src = INS_OperandReg(ins, OP_1);
@@ -3763,24 +3766,39 @@ void ins_inspect(INS ins) {
       }
     }
     break;
-
   case XED_ICLASS_CMPXCHG8B:
   case XED_ICLASS_ENTER:
     LOG(string(__func__) + ": unhandled opcode (opcode=" + decstr(ins_indx) +
         ")\n");
 
     break;
+    /*
+  case XED_ICLASS_XORPS:
+  case XED_ICLASS_VPOR:
+  case XED_ICLASS_VPXOR:
+  case XED_ICLASS_VP:
+    // TODO:
+    break;
+  case XED_ICLASS_MOVBE:
+    break;
+  case XED_ICLASS_VPBROADCASTB:
+  case XED_ICLASS_VPBROADCASTD:
+  case XED_ICLASS_VPBROADCASTQ:
+  case XED_ICLASS_VPBROADCASTW:
+
+  case XED_ICLASS_VZEROUPPER:
+    */
   default:
     // https://intelxed.github.io/ref-manual/xed-extension-enum_8h.html#ae7b9f64cdf123c5fda22bd10d5db9916
     // INT32 num_op = INS_OperandCount(ins);
+    // INT32 ins_ext = INS_Extension(ins);
+    // if (ins_ext != 0 && ins_ext != 10) {
+    //    if (ins_ext >= XED_EXTENSION_SSE ) {
     /*
-    INT32 ins_ext = INS_Extension(ins);
-    if (ins_ext != 0 && ins_ext != 10) {
-      //    if (ins_ext >= XED_EXTENSION_SSE ) {
-      LOGD("[uninstrumented] opcode=%d, ext=%d, %s \n", ins_indx, ins_ext,
-           INS_Disassemble(ins).c_str());
-    }
-  */
+  LOGD("[uninstrumented] opcode=%d, ext=%d, %s \n", ins_indx, ins_ext,
+       INS_Disassemble(ins).c_str());
+       */
+    //}
     break;
   }
 }

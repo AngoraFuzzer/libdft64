@@ -41,7 +41,13 @@ template <> lb_type tag_alloc<lb_type>(unsigned int offset);
 
 std::vector<tag_seg> tag_get(lb_type);
 
-#include "config.h"
+/********************************************************
+others
+********************************************************/
+#if !defined(LIBDFT_TAG_TYPE)
+#define LIBDFT_TAG_TYPE libdft_bdd_tag
+#endif
+typedef LIBDFT_TAG_TYPE tag_t;
 
 inline bool tag_is_empty(tag_t const &tag) {
   return tag == tag_traits<tag_t>::cleared_val;

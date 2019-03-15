@@ -1,12 +1,13 @@
 # libdft: Practical Dynamic Data Flow Tracking
 
-These code in src directory is modified from [VUzzer64](https://github.com/vusec/vuzzer64).
+These code is modified from [VUzzer64](https://github.com/vusec/vuzzer64), and it is originally from [libdft](https://www.cs.columbia.edu/~vpk/research/libdft/).
 
 ## Features
 
 - Support Intel Pin 3.x
 - Support Intel 64 bit platform
-- Use Angora's taint store structure.
+- Support basic SSE, AVX instructions.
+- Use BDD data structure described in [Angora][3]'s paper.
 
 ## Contributing guidance
 As [TaintInduce](https://taintinduce.github.io/) mentioned, libdft exists the soundness and completeness probelm.

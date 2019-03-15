@@ -1,95 +1,35 @@
 #include "syscall_hook.h"
-#include "config.h"
+#include "branch_pred.h"
 #include "debug.h"
+#include "libdft_api.h"
+#include "pin.H"
+#include "syscall_desc.h"
 #include "tagmap.h"
+
 #include <iostream>
+#include <set>
+#include <sys/syscall.h>
+#include <unistd.h>
+
+#define FUZZING_INPUT_FILE "cur_input"
 
 extern syscall_desc_t syscall_desc[SYSCALL_MAX];
-
-// By default.
-#define NUM_FD_SET 5
-static int fuzzing_fd[NUM_FD_SET] = {-1, -1, -1, -1, -1};
-static u32 stdin_read_off = 0;
+std::set<int> fuzzing_fd_set;
+static unsigned int stdin_read_off = 0;
 static bool tainted = false;
 
-/* XXX: Latest Intel Pin (3.7) doesn't support pread64 and stat
- * (See $PIN_ROOT/intel64/runtime/pincrt/libc-dynamic.so) */
-ssize_t pread64(int fd, void *buf, size_t nbyte, off64_t offset) {
-  /* Since we must not change the file pointer preserve the value so that
-  we can restore it later.  */
-  int save_errno;
-  ssize_t result;
-  off64_t old_offset = lseek64(fd, 0, SEEK_CUR);
-  if (old_offset == (off64_t)-1)
-    return -1;
-  /* Set to wanted position.  */
-  if (lseek(fd, offset, SEEK_SET) == (off64_t)-1)
-    return -1;
-  /* Write out the data.  */
-  result = read(fd, buf, nbyte);
-  /* Now we have to restore the position.  If this fails we have to
-     return this as an error.  But if the writing also failed we
-     return this error.  */
-  save_errno = errno;
-  if (lseek(fd, old_offset, SEEK_SET) == (off64_t)-1) {
-    if (result == -1)
-      errno = save_errno;
-    return -1;
-  }
-  errno = save_errno;
-  return result;
+inline bool is_tainted() { return tainted; }
+
+static inline bool is_fuzzing_fd(int fd) {
+  return fd == STDIN_FILENO || fuzzing_fd_set.count(fd) > 0;
 }
 
-bool is_tainted() { return tainted; }
-
-static bool is_fuzzing_fd(int fd) {
-  if (fd == STDIN_FILENO)
-    return true;
-  if (fd < 0)
-    return false;
-  for (int i = 0; i < NUM_FD_SET; i++) {
-    if (fuzzing_fd[i] == fd) {
-      return true;
-    } else if (fuzzing_fd[i] < 0) {
-      break;
-    }
-  }
-
-  return false;
+static inline void add_fuzzing_fd(int fd) {
+  if (fd > 0)
+    fuzzing_fd_set.insert(fd);
 }
 
-static void add_fuzzing_fd(int fd) {
-  if (fd < 0)
-    return;
-  for (int i = 0; i < NUM_FD_SET; i++) {
-    if (fuzzing_fd[i] == fd)
-      return;
-    if (fuzzing_fd[i] < 0) {
-      fuzzing_fd[i] = fd;
-      return;
-    }
-  }
-  fuzzing_fd[0] = fd;
-}
-
-static void remove_fuzzing_fd(int fd) {
-  if (fd < 0)
-    return;
-  int i;
-  int k = -1;
-
-  for (i = 0; i < NUM_FD_SET; i++) {
-    if (fuzzing_fd[i] == fd) {
-      k = i;
-    } else if (fuzzing_fd[i] < 0) {
-      break;
-    }
-  }
-  if (k >= 0) {
-    fuzzing_fd[k] = fuzzing_fd[i - 1];
-    fuzzing_fd[i - 1] = -1;
-  }
-}
+static inline void remove_fuzzing_fd(int fd) { fuzzing_fd_set.erase(fd); }
 
 /* __NR_open post syscall hook */
 static void post_open_hook(THREADID tid, syscall_ctx_t *ctx) {
@@ -206,16 +146,17 @@ static void post_pread64_hook(THREADID tid, syscall_ctx_t *ctx) {
   const int fd = ctx->arg[SYSCALL_ARG0];
   const ADDRINT buf = ctx->arg[SYSCALL_ARG1];
   size_t count = ctx->arg[SYSCALL_ARG2];
-  const u32 read_off = ctx->arg[SYSCALL_ARG3];
+  const unsigned int read_off = ctx->arg[SYSCALL_ARG3];
 
   if (is_fuzzing_fd(fd)) {
     tainted = true;
-    LOGD("[pread] fd: %d, offset: %d, size: %lu\n", fd, read_off, nr);
+    LOGD("[pread64] fd: %d, offset: %d, size: %lu / %lu\n", fd, read_off, nr,
+         count);
     if (count > nr + 32) {
       count = nr + 32;
     }
     /* set the tag markings */
-    for (u32 i = 0; i < count; i++) {
+    for (unsigned int i = 0; i < count; i++) {
       tag_t t = tag_alloc<tag_t>(read_off + i);
       tagmap_setb(buf + i, t);
     }
@@ -243,7 +184,7 @@ static void post_mmap_hook(THREADID tid, syscall_ctx_t *ctx) {
   if (is_fuzzing_fd(fd)) {
     tainted = true;
     LOGD("[mmap] fd: %d, offset: %ld, size: %lu\n", fd, read_off, nr);
-    for (u32 i = 0; i < nr; i++) {
+    for (unsigned int i = 0; i < nr; i++) {
       tag_t t = tag_alloc<tag_t>(read_off + i);
       tagmap_setb(buf + i, t);
     }
@@ -273,8 +214,6 @@ void hook_file_syscall() {
 
   (void)syscall_set_post(&syscall_desc[__NR_read], post_read_hook);
   (void)syscall_set_post(&syscall_desc[__NR_pread64], post_pread64_hook);
-  // (void)syscall_set_post(&syscall_desc[__NR_readv], post_readv_hook);
-  // (void)syscall_set_post(&syscall_desc[__NR_mmap2], post_mmap2_hook);
   (void)syscall_set_post(&syscall_desc[__NR_mmap], post_mmap_hook);
   (void)syscall_set_post(&syscall_desc[__NR_munmap], post_munmap_hook);
 }
