@@ -360,7 +360,7 @@ static inline int thread_ctx_init(void) {
  */
 int libdft_init() {
 
-  std::ios::sync_with_stdio(false);
+  // std::ios::sync_with_stdio(false);
 
   /* initialize symbol processing */
   PIN_InitSymbolsAlt(IFUNC_SYMBOLS);
