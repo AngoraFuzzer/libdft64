@@ -14,8 +14,12 @@ As [TaintInduce](https://taintinduce.github.io/) mentioned, libdft exists the so
 - The taint propagation rules may be wrong.
 - It only supports the basic instructions, and there are many other instructions it need to support.
 
-Check all the instructions in [issue#1](https://github.com/AngoraFuzzer/libdft64/issues/1).
-If you want to contribute to this, please read and modify the code in `src/libdft_core.cpp`, and pull requests on github for us.
+If you want to contribute to this, modify the instructions in `src/libdft_core.cpp`, and pull requests on github for us.
+
+## Limitation of our taint propagation rules
+- Byte level
+- Ignore implicit flows
+- Ignore flags registers
 
 ## Docker
 ```

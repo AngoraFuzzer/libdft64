@@ -297,16 +297,18 @@ void ins_xfer_op(INS ins) {
   if (INS_MemoryOperandCount(ins) == 0) {
     reg_dst = INS_OperandReg(ins, OP_0);
     reg_src = INS_OperandReg(ins, OP_1);
-    if (REG_is_xmm(reg_dst)) {
-      R2R_CALL(r2r_xfer_opx, reg_dst, reg_src);
-    } else if (REG_is_ymm(reg_dst)) {
-      R2R_CALL(r2r_xfer_opy, reg_dst, reg_src);
-    } else if (REG_is_gr64(reg_dst)) {
+    if (REG_is_gr64(reg_dst)) {
       R2R_CALL(r2r_xfer_opq, reg_dst, reg_src);
     } else if (REG_is_gr32(reg_dst)) {
       R2R_CALL(r2r_xfer_opl, reg_dst, reg_src);
     } else if (REG_is_gr16(reg_dst)) {
       R2R_CALL(r2r_xfer_opw, reg_dst, reg_src);
+    } else if (REG_is_xmm(reg_dst)) {
+      R2R_CALL(r2r_xfer_opx, reg_dst, reg_src);
+    } else if (REG_is_ymm(reg_dst)) {
+      R2R_CALL(r2r_xfer_opy, reg_dst, reg_src);
+    } else if (REG_is_mm(reg_dst)) {
+      R2R_CALL(r2r_xfer_opq, reg_dst, reg_src);
     } else {
       if (REG_is_Lower8(reg_dst) && REG_is_Lower8(reg_src)) {
         R2R_CALL(r2r_xfer_opb_l, reg_dst, reg_src);
@@ -320,16 +322,18 @@ void ins_xfer_op(INS ins) {
     }
   } else if (INS_OperandIsMemory(ins, OP_1)) {
     reg_dst = INS_OperandReg(ins, OP_0);
-    if (REG_is_xmm(reg_dst)) {
-      M2R_CALL(m2r_xfer_opx, reg_dst);
-    } else if (REG_is_ymm(reg_dst)) {
-      M2R_CALL(m2r_xfer_opy, reg_dst);
-    } else if (REG_is_gr64(reg_dst)) {
+    if (REG_is_gr64(reg_dst)) {
       M2R_CALL(m2r_xfer_opq, reg_dst);
     } else if (REG_is_gr32(reg_dst)) {
       M2R_CALL(m2r_xfer_opl, reg_dst);
     } else if (REG_is_gr16(reg_dst)) {
       M2R_CALL(m2r_xfer_opw, reg_dst);
+    } else if (REG_is_xmm(reg_dst)) {
+      M2R_CALL(m2r_xfer_opx, reg_dst);
+    } else if (REG_is_ymm(reg_dst)) {
+      M2R_CALL(m2r_xfer_opy, reg_dst);
+    } else if (REG_is_mm(reg_dst)) {
+      M2R_CALL(m2r_xfer_opq, reg_dst);
     } else if (REG_is_Upper8(reg_dst)) {
       M2R_CALL(m2r_xfer_opb_u, reg_dst);
     } else {
@@ -337,16 +341,18 @@ void ins_xfer_op(INS ins) {
     }
   } else {
     reg_src = INS_OperandReg(ins, OP_1);
-    if (REG_is_xmm(reg_src)) {
-      R2M_CALL(r2m_xfer_opx, reg_src);
-    } else if (REG_is_ymm(reg_src)) {
-      R2M_CALL(r2m_xfer_opy, reg_src);
-    } else if (REG_is_gr64(reg_src)) {
+    if (REG_is_gr64(reg_src)) {
       R2M_CALL(r2m_xfer_opq, reg_src);
     } else if (REG_is_gr32(reg_src)) {
       R2M_CALL(r2m_xfer_opl, reg_src);
     } else if (REG_is_gr16(reg_src)) {
       R2M_CALL(r2m_xfer_opw, reg_src);
+    } else if (REG_is_xmm(reg_src)) {
+      R2M_CALL(r2m_xfer_opx, reg_src);
+    } else if (REG_is_ymm(reg_src)) {
+      R2M_CALL(r2m_xfer_opy, reg_src);
+    } else if (REG_is_mm(reg_src)) {
+      R2M_CALL(r2m_xfer_opq, reg_src);
     } else if (REG_is_Upper8(reg_src)) {
       R2M_CALL(r2m_xfer_opb_u, reg_src);
     } else {

@@ -292,7 +292,16 @@ inline size_t REG_INDX(REG reg) {
   case REG_ST7:
     return DFT_REG_ST7;
     break;
-
+  case REG_ZMM0:
+  case REG_ZMM1:
+  case REG_ZMM2:
+  case REG_ZMM3:
+  case REG_ZMM4:
+  case REG_ZMM5:
+  case REG_ZMM6:
+  case REG_ZMM7:
+    LOGD("found zxmm!\n");
+    break;
   default:
     break;
   }

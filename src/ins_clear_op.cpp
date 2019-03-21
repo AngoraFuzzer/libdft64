@@ -64,35 +64,23 @@ void ins_clear_op(INS ins) {
     M_CLEAR_N(n);
   } else {
     REG reg_dst = INS_OperandReg(ins, OP_0);
-    if (REG_is_xmm(reg_dst)) {
-      INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)r_clrx,
-                     IARG_FAST_ANALYSIS_CALL, IARG_THREAD_ID, IARG_UINT32,
-                     REG_INDX(reg_dst), IARG_END);
-    } else if (REG_is_ymm(reg_dst)) {
-      INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)r_clry,
-                     IARG_FAST_ANALYSIS_CALL, IARG_THREAD_ID, IARG_UINT32,
-                     REG_INDX(reg_dst), IARG_END);
-    } else if (REG_is_gr64(reg_dst)) {
-      INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)r_clrq,
-                     IARG_FAST_ANALYSIS_CALL, IARG_THREAD_ID, IARG_UINT32,
-                     REG_INDX(reg_dst), IARG_END);
+    if (REG_is_gr64(reg_dst)) {
+      R_CALL(r_clrq, reg_dst);
     } else if (REG_is_gr32(reg_dst)) {
-      INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)r_clrl,
-                     IARG_FAST_ANALYSIS_CALL, IARG_THREAD_ID, IARG_UINT32,
-                     REG_INDX(reg_dst), IARG_END);
+      R_CALL(r_clrl, reg_dst);
     } else if (REG_is_gr16(reg_dst)) {
-      INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)r_clrw,
-                     IARG_FAST_ANALYSIS_CALL, IARG_THREAD_ID, IARG_UINT32,
-                     REG_INDX(reg_dst), IARG_END);
+      R_CALL(r_clrw, reg_dst);
+    } else if (REG_is_xmm(reg_dst)) {
+      R_CALL(r_clrx, reg_dst);
+    } else if (REG_is_mm(reg_dst)) {
+      R_CALL(r_clrq, reg_dst);
+    } else if (REG_is_ymm(reg_dst)) {
+      R_CALL(r_clry, reg_dst);
     } else {
       if (REG_is_Upper8(reg_dst))
-        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)r_clrb_u,
-                       IARG_FAST_ANALYSIS_CALL, IARG_THREAD_ID, IARG_UINT32,
-                       REG_INDX(reg_dst), IARG_END);
+        R_CALL(r_clrb_u, reg_dst);
       else
-        INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)r_clrb_l,
-                       IARG_FAST_ANALYSIS_CALL, IARG_THREAD_ID, IARG_UINT32,
-                       REG_INDX(reg_dst), IARG_END);
+        R_CALL(r_clrb_l, reg_dst);
     }
   }
 }

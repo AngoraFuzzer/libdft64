@@ -97,6 +97,12 @@ static void PIN_FAST_ANALYSIS_CALL r2m_save_opl(THREADID tid, ADDRINT dst) {
   }
 }
 
+bool reg_eq(INS ins) {
+  return (!INS_OperandIsImmediate(ins, OP_1) &&
+          INS_MemoryOperandCount(ins) == 0 &&
+          INS_OperandReg(ins, OP_0) == INS_OperandReg(ins, OP_1));
+}
+
 /*
  * instruction inspection (instrumentation function)
  *
@@ -118,8 +124,13 @@ void ins_inspect(INS ins) {
   }
   // LOGD("[ins] opcode=%d, %s \n", ins_indx, INS_Disassemble(ins).c_str());
   switch (ins_indx) {
+  // **** bianry ****
   case XED_ICLASS_ADC:
   case XED_ICLASS_ADD:
+  case XED_ICLASS_ADD_LOCK:
+  case XED_ICLASS_ADDSD:
+  case XED_ICLASS_ADDSS:
+  case XED_ICLASS_AND:
   case XED_ICLASS_OR:
   case XED_ICLASS_POR:
     ins_binary_op(ins);
@@ -131,19 +142,28 @@ void ins_inspect(INS ins) {
   case XED_ICLASS_PSUBB:
   case XED_ICLASS_PSUBW:
   case XED_ICLASS_PSUBD:
-    if (!INS_OperandIsImmediate(ins, OP_1) &&
-        INS_MemoryOperandCount(ins) == 0 &&
-        INS_OperandReg(ins, OP_0) == INS_OperandReg(ins, OP_1)) {
+  case XED_ICLASS_XORPS:
+  case XED_ICLASS_XORPD:
+    if (reg_eq(ins)) {
       ins_clear_op(ins);
     } else {
       ins_binary_op(ins);
     }
     break;
-  case XED_ICLASS_AND:
-    ins_binary_op(ins);
-    break;
+
+    // 3-arg
+    // case XED_ICLASS_VPXOR:
+    // case XED_ICLASS_VPSUBB:
+    // case XED_ICLASS_VPSUBW:
+    // case XED_ICLASS_VPSUBD:
+
+    // case XED_ICLASS_VPXORD:
+    // case XED_ICLASS_VPXORQ:
+
+  // **** xfer ****
   case XED_ICLASS_BSF:
   case XED_ICLASS_BSR:
+  case XED_ICLASS_TZCNT:
   case XED_ICLASS_MOV:
     if (INS_OperandIsImmediate(ins, OP_1) ||
         (INS_OperandIsReg(ins, OP_1) &&
@@ -153,6 +173,40 @@ void ins_inspect(INS ins) {
       ins_xfer_op(ins);
     }
     break;
+
+  case XED_ICLASS_MOVD:
+  case XED_ICLASS_VMOVD:
+  case XED_ICLASS_MOVQ:
+  case XED_ICLASS_VMOVQ:
+  case XED_ICLASS_MOVAPS:
+  case XED_ICLASS_VMOVAPS:
+  case XED_ICLASS_MOVAPD:
+  case XED_ICLASS_VMOVAPD:
+  case XED_ICLASS_MOVDQU:
+  case XED_ICLASS_VMOVDQU:
+  case XED_ICLASS_MOVDQA:
+  case XED_ICLASS_VMOVDQA:
+  case XED_ICLASS_MOVUPS:
+  case XED_ICLASS_VMOVUPS:
+  case XED_ICLASS_MOVUPD:
+  case XED_ICLASS_VMOVUPD:
+  case XED_ICLASS_MOVSS:
+  case XED_ICLASS_VMOVSS:
+  case XED_ICLASS_MOVSD_XMM:
+    ins_xfer_op(ins);
+    break;
+  case XED_ICLASS_MOVLPD:
+  case XED_ICLASS_MOVLPS:
+    ins_movlp(ins);
+    break;
+  // case XED_ICLASS_VMOVLPD:
+  // case XED_ICLASS_VMOVLPS:
+  case XED_ICLASS_MOVHPD:
+  case XED_ICLASS_MOVHPS:
+    ins_movhp(ins);
+    break;
+  // case XED_ICLASS_VMOVHPD:
+  // case XED_ICLASS_VMOVHPS:
   case XED_ICLASS_CMOVB:
   case XED_ICLASS_CMOVBE:
   case XED_ICLASS_CMOVL:
@@ -189,6 +243,7 @@ void ins_inspect(INS ins) {
   case XED_ICLASS_CQO:
     CALL(_cqo);
     break;
+
   case XED_ICLASS_MOVSX:
   case XED_ICLASS_MOVZX:
     ins_movsx_op(ins);
@@ -196,8 +251,10 @@ void ins_inspect(INS ins) {
   case XED_ICLASS_MOVSXD:
     ins_movsxd_op(ins);
     break;
+
   case XED_ICLASS_DIV:
   case XED_ICLASS_IDIV:
+  case XED_ICLASS_DIVSD:
   case XED_ICLASS_MUL:
     ins_ternary_op(ins);
     break;
@@ -245,13 +302,8 @@ void ins_inspect(INS ins) {
     ins_clear_op(ins);
     break;
   case XED_ICLASS_CMPXCHG:
+  case XED_ICLASS_CMPXCHG_LOCK:
     ins_cmpxchg_op(ins);
-    break;
-  case XED_ICLASS_CMP:
-  case XED_ICLASS_CMPSB:
-  case XED_ICLASS_CMPSW:
-  case XED_ICLASS_CMPSD:
-  case XED_ICLASS_CMPSQ:
     break;
   case XED_ICLASS_XCHG:
     ins_xchg_op(ins);
@@ -301,16 +353,7 @@ void ins_inspect(INS ins) {
   case XED_ICLASS_SALC:
     ins_clear_op(ins);
     break;
-  case XED_ICLASS_RCL:
-  case XED_ICLASS_RCR:
-  case XED_ICLASS_ROL:
-  case XED_ICLASS_ROR:
-  case XED_ICLASS_SHL:
-  case XED_ICLASS_SAR:
-  case XED_ICLASS_SHR:
-  case XED_ICLASS_SHLD:
-  case XED_ICLASS_SHRD:
-    break;
+
   case XED_ICLASS_POP:
     ins_pop_op(ins);
     break;
@@ -345,68 +388,83 @@ void ins_inspect(INS ins) {
   case XED_ICLASS_LEA:
     ins_lea(ins);
     break;
-  case XED_ICLASS_MOVAPS:
-  case XED_ICLASS_MOVAPD:
-  case XED_ICLASS_MOVDQA:
-  case XED_ICLASS_MOVDQU:
-  case XED_ICLASS_MOVUPS:
-  case XED_ICLASS_MOVUPD:
-    // FIXME:
-    // xmm
-    ins_xfer_op(ins);
+  case XED_ICLASS_CMP:
+  case XED_ICLASS_CMPSB:
+  case XED_ICLASS_CMPSW:
+  case XED_ICLASS_CMPSD:
+  case XED_ICLASS_CMPSQ:
+  case XED_ICLASS_CMPSS: // FIXME, 3arg
+  case XED_ICLASS_UCOMISS:
     break;
-  case XED_ICLASS_VMOVDQA:
-  case XED_ICLASS_VMOVDQU:
-    // ymm
-    ins_xfer_op(ins);
+  case XED_ICLASS_PCMPEQB:
+    ins_binary_op(ins);
     break;
-  case XED_ICLASS_MOVD:
-  case XED_ICLASS_MOVQ:
-  case XED_ICLASS_VMOVD:
-  case XED_ICLASS_VMOVQ:
-    ins_xfer_op(ins);
-    break;
-  case XED_ICLASS_MOVLPD:
-  case XED_ICLASS_MOVLPS:
-    ins_movlp(ins);
-    break;
-  case XED_ICLASS_MOVHPD:
-  case XED_ICLASS_MOVHPS:
-    ins_movhp(ins);
-    break;
-  case XED_ICLASS_CMPXCHG8B:
-  case XED_ICLASS_ENTER:
-    LOG(string(__func__) + ": unhandled opcode (opcode=" + decstr(ins_indx) +
-        ")\n");
-
-    break;
-    /*
-  case XED_ICLASS_XORPS:
+    // TODO
+  case XED_ICLASS_XGETBV:
+  case XED_ICLASS_PMOVMSKB:
+  case XED_ICLASS_VPMOVMSKB:
+  case XED_ICLASS_PUNPCKLBW:
+  case XED_ICLASS_PUNPCKLWD:
+  case XED_ICLASS_PSHUFD:
+  case XED_ICLASS_PMINUB:
+  case XED_ICLASS_PSLLDQ:
+  case XED_ICLASS_PSRLDQ:
   case XED_ICLASS_VPOR:
   case XED_ICLASS_VPXOR:
-  case XED_ICLASS_VP:
-    // TODO:
-    break;
-  case XED_ICLASS_MOVBE:
-    break;
+  case XED_ICLASS_VPCMPEQB:
   case XED_ICLASS_VPBROADCASTB:
-  case XED_ICLASS_VPBROADCASTD:
-  case XED_ICLASS_VPBROADCASTQ:
-  case XED_ICLASS_VPBROADCASTW:
-
   case XED_ICLASS_VZEROUPPER:
-    */
+  case XED_ICLASS_BSWAP:
+
+    break;
+
+  case XED_ICLASS_JMP:
+  case XED_ICLASS_JZ:
+  case XED_ICLASS_JNZ:
+  case XED_ICLASS_JB:
+  case XED_ICLASS_JNB:
+  case XED_ICLASS_JBE:
+  case XED_ICLASS_JNBE:
+  case XED_ICLASS_JL:
+  case XED_ICLASS_JNL:
+  case XED_ICLASS_JLE:
+  case XED_ICLASS_JNLE:
+  case XED_ICLASS_JS:
+  case XED_ICLASS_JNS:
+  case XED_ICLASS_JP:
+  case XED_ICLASS_JNP:
+  case XED_ICLASS_RET_FAR:
+  case XED_ICLASS_RET_NEAR:
+  case XED_ICLASS_CALL_FAR:
+  case XED_ICLASS_CALL_NEAR:
+  case XED_ICLASS_TEST:
+  case XED_ICLASS_SYSCALL:
+  case XED_ICLASS_RCL:
+  case XED_ICLASS_RCR:
+  case XED_ICLASS_ROL:
+  case XED_ICLASS_ROR:
+  case XED_ICLASS_SHL:
+  case XED_ICLASS_SAR:
+  case XED_ICLASS_SHR:
+  case XED_ICLASS_SHLD:
+  case XED_ICLASS_SHRD:
+  case XED_ICLASS_NEG:
+  case XED_ICLASS_NOT:
+  case XED_ICLASS_NOP:
+  case XED_ICLASS_BT:
+  case XED_ICLASS_DEC:
+  case XED_ICLASS_DEC_LOCK:
+  case XED_ICLASS_INC:
+  case XED_ICLASS_INC_LOCK:
+    break;
+
   default:
     // https://intelxed.github.io/ref-manual/xed-extension-enum_8h.html#ae7b9f64cdf123c5fda22bd10d5db9916
     // INT32 num_op = INS_OperandCount(ins);
-    // INT32 ins_ext = INS_Extension(ins);
-    // if (ins_ext != 0 && ins_ext != 10) {
-    //    if (ins_ext >= XED_EXTENSION_SSE ) {
-    /*
-  LOGD("[uninstrumented] opcode=%d, ext=%d, %s \n", ins_indx, ins_ext,
-       INS_Disassemble(ins).c_str());
-       */
-    //}
+    INT32 ins_ext = INS_Extension(ins);
+    // if (ins_ext != 0 && ins_ext != 10)
+    LOGD("[uninstrumented] opcode=%d, ext=%d, %s \n", ins_indx, ins_ext,
+         INS_Disassemble(ins).c_str());
     break;
   }
 }

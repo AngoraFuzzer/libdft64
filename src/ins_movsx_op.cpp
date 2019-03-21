@@ -1,5 +1,6 @@
 #include "ins_movsx_op.h"
 #include "ins_helper.h"
+#include "ins_xfer_op.h"
 
 /* threads context */
 extern thread_ctx_t *threads_ctx;
@@ -230,12 +231,14 @@ void ins_movsx_op(INS ins) {
 
 void ins_movsxd_op(INS ins) {
   REG reg_dst, reg_src;
+  reg_dst = INS_OperandReg(ins, OP_0);
+  if (!REG_is_gr64(reg_dst)) {
+    ins_xfer_op(ins);
+  }
   if (INS_MemoryOperandCount(ins) == 0) {
-    reg_dst = INS_OperandReg(ins, OP_0);
     reg_src = INS_OperandReg(ins, OP_1);
     R2R_CALL(_movsx_r2r_opql, reg_dst, reg_src);
   } else {
-    reg_dst = INS_OperandReg(ins, OP_0);
     M2R_CALL(_movsx_m2r_opql, reg_dst);
   }
 }
