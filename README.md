@@ -28,6 +28,17 @@ As [TaintInduce](https://taintinduce.github.io/) mentioned, libdft exists the so
 
 If you want to contribute to this, modify the instructions in `src/libdft_core.cpp`, and pull requests on github for us.
 
+## Build 
+
+- Download Intel Pin 3.x and set PIN_ROOT to pin's directory.
+
+```sh
+PREFIX=/path-to-install ./install_pin.sh
+```
+- build libdft64
+```
+make
+```
 
 ## Docker
 ```
