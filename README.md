@@ -9,6 +9,18 @@ These code is modified from [VUzzer64](https://github.com/vusec/vuzzer64), and i
 - Support basic SSE, AVX instructions.
 - Use BDD data structure described in [Angora][3]'s paper.
 
+## Limitation of our taint propagation rules
+- Byte level
+- Ignore implicit flows
+- Ignore flags registers
+
+## TODO
+- [ ] ternary instructions
+- [ ] rules for flags registers 
+- [ ] performance optimization
+- [ ] support more instructions
+- [ ] test for each instruction
+
 ## Contributing guidance
 As [TaintInduce](https://taintinduce.github.io/) mentioned, libdft exists the soundness and completeness probelm.
 - The taint propagation rules may be wrong.
@@ -16,10 +28,6 @@ As [TaintInduce](https://taintinduce.github.io/) mentioned, libdft exists the so
 
 If you want to contribute to this, modify the instructions in `src/libdft_core.cpp`, and pull requests on github for us.
 
-## Limitation of our taint propagation rules
-- Byte level
-- Ignore implicit flows
-- Ignore flags registers
 
 ## Docker
 ```
