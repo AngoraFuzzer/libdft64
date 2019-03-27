@@ -71,5 +71,6 @@ void ins_movlp(INS ins);
 void ins_movhp(INS ins);
 
 void ins_lea(INS ins);
+void ins_movbe_op(INS ins);
 
 #endif

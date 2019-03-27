@@ -96,8 +96,12 @@ lb_type BDDTag::insert(tag_off pos) {
   return cur_lb;
 }
 
-void BDDTag::mark_sign(lb_type lb) { nodes[lb].seg.sign = true; }
+void BDDTag::set_sign(lb_type lb) { nodes[lb].seg.sign = true; }
 bool BDDTag::get_sign(lb_type lb) { return nodes[lb].seg.sign; }
+
+void BDDTag::set_size(lb_type lb, size_t size) {
+  nodes[lb].seg.end += (size - 1);
+}
 
 lb_type BDDTag::combine(lb_type l1, lb_type l2) {
 

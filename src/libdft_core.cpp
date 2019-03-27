@@ -4,7 +4,7 @@
 #include "ins_binary_op.h"
 #include "ins_clear_op.h"
 #include "ins_movsx_op.h"
-#include "ins_ternary_op.h"
+#include "ins_unitary_op.h"
 #include "ins_xchg_op.h"
 #include "ins_xfer_op.h"
 
@@ -97,11 +97,43 @@ static void PIN_FAST_ANALYSIS_CALL r2m_save_opl(THREADID tid, ADDRINT dst) {
   }
 }
 
-bool reg_eq(INS ins) {
+static bool reg_eq(INS ins) {
   return (!INS_OperandIsImmediate(ins, OP_1) &&
           INS_MemoryOperandCount(ins) == 0 &&
           INS_OperandReg(ins, OP_0) == INS_OperandReg(ins, OP_1));
 }
+
+static void PIN_FAST_ANALYSIS_CALL r_cmp(THREADID tid, ADDRINT dst,
+                                         uint64_t val) {
+  if (!tag_is_empty(RTAG[dst][0])) {
+    LOGD("r taint(%ld)!\n", val);
+  }
+}
+
+static void PIN_FAST_ANALYSIS_CALL m_cmp(THREADID tid, ADDRINT dst) {
+  if (!tag_is_empty(MTAG(dst))) {
+    LOGD("m taint!\n");
+  }
+}
+
+void ins_cmp_op(INS ins) {
+  if (INS_OperandIsReg(ins, OP_0)) {
+    REG reg_dst = INS_OperandReg(ins, OP_0);
+    INS_InsertCall(ins, IPOINT_BEFORE, AFUNPTR(r_cmp), IARG_FAST_ANALYSIS_CALL,
+                   IARG_THREAD_ID, IARG_UINT32, REG_INDX(reg_dst),
+                   IARG_REG_VALUE, reg_dst, IARG_END);
+    // R_CALL(r_cmp, reg_dst);
+  }
+  if (INS_OperandIsReg(ins, OP_1)) {
+    REG reg_src = INS_OperandReg(ins, OP_1);
+    R_CALL(r_cmp, reg_src);
+  }
+  if (INS_MemoryOperandCount(ins) > 0) {
+    M_CALL_R(m_cmp);
+  }
+}
+
+VOID dasm(char *s) { LOGD("[ins] %s\n", s); }
 
 /*
  * instruction inspection (instrumentation function)
@@ -122,12 +154,21 @@ void ins_inspect(INS ins) {
     /* done */
     return;
   }
-  // LOGD("[ins] opcode=%d, %s \n", ins_indx, INS_Disassemble(ins).c_str());
+
+  // LOGD("[ins] %s \n", INS_Disassemble(ins).c_str());
+  /*
+  char *cstr;
+  cstr = new char[INS_Disassemble(ins).size() + 1];
+  strcpy(cstr, INS_Disassemble(ins).c_str());
+  INS_InsertCall(ins, IPOINT_BEFORE, (AFUNPTR)dasm, IARG_PTR, cstr, IARG_END);
+  */
+
   switch (ins_indx) {
   // **** bianry ****
   case XED_ICLASS_ADC:
   case XED_ICLASS_ADD:
   case XED_ICLASS_ADD_LOCK:
+  case XED_ICLASS_ADDPD:
   case XED_ICLASS_ADDSD:
   case XED_ICLASS_ADDSS:
   case XED_ICLASS_AND:
@@ -139,6 +180,7 @@ void ins_inspect(INS ins) {
   case XED_ICLASS_SBB:
   case XED_ICLASS_SUB:
   case XED_ICLASS_PXOR:
+  case XED_ICLASS_SUBSD:
   case XED_ICLASS_PSUBB:
   case XED_ICLASS_PSUBW:
   case XED_ICLASS_PSUBD:
@@ -150,13 +192,32 @@ void ins_inspect(INS ins) {
       ins_binary_op(ins);
     }
     break;
+  case XED_ICLASS_DIV:
+  case XED_ICLASS_IDIV:
+  case XED_ICLASS_MUL:
+    ins_unitary_op(ins);
+    break;
+  case XED_ICLASS_IMUL:
+    if (INS_OperandIsImplicit(ins, OP_1)) {
+      ins_unitary_op(ins);
+    } else {
+      ins_binary_op(ins);
+      // if ternary // TODO
+    }
+    break;
+  case XED_ICLASS_MULSD:
+  case XED_ICLASS_MULPD:
+  case XED_ICLASS_DIVSD:
+    ins_binary_op(ins);
 
-    // 3-arg
+    // TODO: ternary
+    // case XED_ICLASS_VMULSD:
+    // case XED_ICLASS_VDIVSD:
     // case XED_ICLASS_VPXOR:
+
     // case XED_ICLASS_VPSUBB:
     // case XED_ICLASS_VPSUBW:
     // case XED_ICLASS_VPSUBD:
-
     // case XED_ICLASS_VPXORD:
     // case XED_ICLASS_VPXORQ:
 
@@ -175,24 +236,27 @@ void ins_inspect(INS ins) {
     break;
 
   case XED_ICLASS_MOVD:
-  case XED_ICLASS_VMOVD:
   case XED_ICLASS_MOVQ:
-  case XED_ICLASS_VMOVQ:
   case XED_ICLASS_MOVAPS:
-  case XED_ICLASS_VMOVAPS:
   case XED_ICLASS_MOVAPD:
-  case XED_ICLASS_VMOVAPD:
   case XED_ICLASS_MOVDQU:
-  case XED_ICLASS_VMOVDQU:
   case XED_ICLASS_MOVDQA:
-  case XED_ICLASS_VMOVDQA:
   case XED_ICLASS_MOVUPS:
-  case XED_ICLASS_VMOVUPS:
   case XED_ICLASS_MOVUPD:
-  case XED_ICLASS_VMOVUPD:
   case XED_ICLASS_MOVSS:
+  // only xmm, ymm
+  case XED_ICLASS_VMOVD:
+  case XED_ICLASS_VMOVQ:
+  case XED_ICLASS_VMOVAPS:
+  case XED_ICLASS_VMOVAPD:
+  case XED_ICLASS_VMOVDQU:
+  case XED_ICLASS_VMOVDQA:
+  case XED_ICLASS_VMOVUPS:
+  case XED_ICLASS_VMOVUPD:
   case XED_ICLASS_VMOVSS:
   case XED_ICLASS_MOVSD_XMM:
+  case XED_ICLASS_CVTSI2SD:
+  case XED_ICLASS_CVTSD2SI:
     ins_xfer_op(ins);
     break;
   case XED_ICLASS_MOVLPD:
@@ -207,6 +271,8 @@ void ins_inspect(INS ins) {
     break;
   // case XED_ICLASS_VMOVHPD:
   // case XED_ICLASS_VMOVHPS:
+  // case XED_ICLASS_MOVHLPS:
+  // case XED_ICLASS_VMOVHLPS:
   case XED_ICLASS_CMOVB:
   case XED_ICLASS_CMOVBE:
   case XED_ICLASS_CMOVL:
@@ -224,6 +290,16 @@ void ins_inspect(INS ins) {
   case XED_ICLASS_CMOVS:
   case XED_ICLASS_CMOVZ:
     ins_xfer_op_predicated(ins);
+    break;
+  case XED_ICLASS_MOVBE:
+    ins_movbe_op(ins);
+    break;
+  case XED_ICLASS_MOVSX:
+  case XED_ICLASS_MOVZX:
+    ins_movsx_op(ins);
+    break;
+  case XED_ICLASS_MOVSXD:
+    ins_movsxd_op(ins);
     break;
   case XED_ICLASS_CBW:
     CALL(_cbw);
@@ -244,27 +320,8 @@ void ins_inspect(INS ins) {
     CALL(_cqo);
     break;
 
-  case XED_ICLASS_MOVSX:
-  case XED_ICLASS_MOVZX:
-    ins_movsx_op(ins);
-    break;
-  case XED_ICLASS_MOVSXD:
-    ins_movsxd_op(ins);
-    break;
-
-  case XED_ICLASS_DIV:
-  case XED_ICLASS_IDIV:
-  case XED_ICLASS_DIVSD:
-  case XED_ICLASS_MUL:
-    ins_ternary_op(ins);
-    break;
-  case XED_ICLASS_IMUL:
-    if (INS_OperandIsImplicit(ins, OP_1)) {
-      ins_ternary_op(ins);
-    } else {
-      ins_binary_op(ins);
-    }
-    break;
+  // ****** clear op ******
+  // TODO: add rules with CMP
   case XED_ICLASS_SETB:
   case XED_ICLASS_SETBE:
   case XED_ICLASS_SETL:
@@ -309,6 +366,7 @@ void ins_inspect(INS ins) {
     ins_xchg_op(ins);
     break;
   case XED_ICLASS_XADD:
+  case XED_ICLASS_XADD_LOCK:
     ins_xadd_op(ins);
     break;
   case XED_ICLASS_XLAT:
@@ -353,7 +411,6 @@ void ins_inspect(INS ins) {
   case XED_ICLASS_SALC:
     ins_clear_op(ins);
     break;
-
   case XED_ICLASS_POP:
     ins_pop_op(ins);
     break;
@@ -381,20 +438,8 @@ void ins_inspect(INS ins) {
   case XED_ICLASS_PUSHFQ:
     M_CLEAR_N(8);
     break;
-  // case XED_ICLASS_CALL_NEAR:
-  // FIXME: should i clear op0?
-  // case XED_ICLASS_LEAVE:
-  // FIXME: should xfer op2 to op3?
   case XED_ICLASS_LEA:
     ins_lea(ins);
-    break;
-  case XED_ICLASS_CMP:
-  case XED_ICLASS_CMPSB:
-  case XED_ICLASS_CMPSW:
-  case XED_ICLASS_CMPSD:
-  case XED_ICLASS_CMPSQ:
-  case XED_ICLASS_CMPSS: // FIXME, 3arg
-  case XED_ICLASS_UCOMISS:
     break;
   case XED_ICLASS_PCMPEQB:
     ins_binary_op(ins);
@@ -415,9 +460,25 @@ void ins_inspect(INS ins) {
   case XED_ICLASS_VPBROADCASTB:
   case XED_ICLASS_VZEROUPPER:
   case XED_ICLASS_BSWAP:
+  case XED_ICLASS_UNPCKLPD:
+  case XED_ICLASS_PSHUFB:
 
     break;
+  case XED_ICLASS_CMP:
+    // ins_cmp_op(ins);
+    break;
+  case XED_ICLASS_CMPSB:
+  case XED_ICLASS_CMPSW:
+  case XED_ICLASS_CMPSD:
+  case XED_ICLASS_CMPSQ:
+  case XED_ICLASS_CMPSS: // FIXME, 3arg
+  case XED_ICLASS_UCOMISS:
+  case XED_ICLASS_UCOMISD:
+  case XED_ICLASS_VPMINUB:
+  case XED_ICLASS_PCMPISTRI:
+    break;
 
+  // Ignore
   case XED_ICLASS_JMP:
   case XED_ICLASS_JZ:
   case XED_ICLASS_JNZ:
@@ -437,8 +498,9 @@ void ins_inspect(INS ins) {
   case XED_ICLASS_RET_NEAR:
   case XED_ICLASS_CALL_FAR:
   case XED_ICLASS_CALL_NEAR:
-  case XED_ICLASS_TEST:
+  case XED_ICLASS_LEAVE:
   case XED_ICLASS_SYSCALL:
+  case XED_ICLASS_TEST:
   case XED_ICLASS_RCL:
   case XED_ICLASS_RCR:
   case XED_ICLASS_ROL:
@@ -456,6 +518,8 @@ void ins_inspect(INS ins) {
   case XED_ICLASS_DEC_LOCK:
   case XED_ICLASS_INC:
   case XED_ICLASS_INC_LOCK:
+  case XED_ICLASS_XSAVEC:
+  case XED_ICLASS_XRSTOR:
     break;
 
   default:

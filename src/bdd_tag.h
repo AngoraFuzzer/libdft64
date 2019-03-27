@@ -11,7 +11,9 @@
 
 #define BDD_LB_WIDTH 24
 #define BDD_LEN_LB 0xF0000000
+#define BDD_LB_MASK 0x0FFFFFFF
 #define BDD_HAS_LEN_LB(lb) (lb >= BDD_LEN_LB)
+#define BDD_CLEAR_LEN_MASK(lb) (lb = lb & BDD_LB_MASK)
 
 #ifndef BDD_TAG_SEG
 #define BDD_TAG_SEG
@@ -55,8 +57,9 @@ public:
   BDDTag();
   ~BDDTag();
   lb_type insert(tag_off pos);
-  void mark_sign(lb_type lb);
+  void set_sign(lb_type lb);
   bool get_sign(lb_type lb);
+  void set_size(lb_type lb, size_t size);
   lb_type combine(lb_type lb1, lb_type lb2);
 
   const std::vector<tag_seg> find(lb_type lb);

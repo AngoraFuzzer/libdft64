@@ -86,11 +86,6 @@
         MTAG(ADDR + 28), MTAG(ADDR + 29), MTAG(ADDR + 30), MTAG(ADDR + 31),    \
   }
 
-/* XXX: Latest Intel Pin (3.7) doesn't support INT2STR */
-#define INT2STR(x)                                                             \
-  static_cast<std::ostringstream &>((std::ostringstream() << std::dec << x))   \
-      .str()
-
 // https://software.intel.com/sites/landingpage/pintool/docs/97619/Pin/html/group__REG__CPU__IA32.html
 inline size_t REG_INDX(REG reg) {
   if (reg == REG_INVALID())

@@ -35,21 +35,28 @@ void PIN_FAST_ANALYSIS_CALL r2r_xfer_opb_l(THREADID tid, uint32_t dst,
 
 void PIN_FAST_ANALYSIS_CALL r2r_xfer_opw(THREADID tid, uint32_t dst,
                                          uint32_t src) {
-
-  for (size_t i = 0; i < 2; i++)
+  for (size_t i = 0; i < 2; i++) {
     RTAG[dst][i] = RTAG[src][i];
+    /*
+    if (!tag_is_empty(RTAG[src][i]))
+      LOGD("[xfer_w] i%ld: src: %d (%d) -> dst: %d (%d)\n", i, src,
+           RTAG[src][i], dst, RTAG[dst][i]);
+           */
+  }
 }
 
 void PIN_FAST_ANALYSIS_CALL r2r_xfer_opl(THREADID tid, uint32_t dst,
                                          uint32_t src) {
-  for (size_t i = 0; i < 4; i++)
+  for (size_t i = 0; i < 4; i++) {
     RTAG[dst][i] = RTAG[src][i];
+  }
 }
 
 void PIN_FAST_ANALYSIS_CALL r2r_xfer_opq(THREADID tid, uint32_t dst,
                                          uint32_t src) {
-  for (size_t i = 0; i < 8; i++)
+  for (size_t i = 0; i < 8; i++) {
     RTAG[dst][i] = RTAG[src][i];
+  }
 }
 
 void PIN_FAST_ANALYSIS_CALL r2r_xfer_opx(THREADID tid, uint32_t dst,
@@ -526,6 +533,67 @@ void ins_lea(INS ins) {
       RR2R_CALL(_lea_opl, reg_dst, reg_base, reg_indx);
     } else if (REG_is_gr16(reg_dst)) {
       RR2R_CALL(_lea_opw, reg_dst, reg_base, reg_indx);
+    }
+  }
+}
+
+void PIN_FAST_ANALYSIS_CALL m2r_xfer_opw_rev(THREADID tid, uint32_t dst,
+                                             ADDRINT src) {
+  for (size_t i = 0; i < 2; i++)
+    RTAG[dst][i] = MTAG(src + (1 - i));
+}
+
+void PIN_FAST_ANALYSIS_CALL m2r_xfer_opl_rev(THREADID tid, uint32_t dst,
+                                             ADDRINT src) {
+  for (size_t i = 0; i < 4; i++)
+    RTAG[dst][i] = MTAG(src + (3 - i));
+}
+
+void PIN_FAST_ANALYSIS_CALL m2r_xfer_opq_rev(THREADID tid, uint32_t dst,
+                                             ADDRINT src) {
+  for (size_t i = 0; i < 8; i++)
+    RTAG[dst][i] = MTAG(src + (7 - i));
+}
+
+void PIN_FAST_ANALYSIS_CALL r2m_xfer_opw_rev(THREADID tid, ADDRINT dst,
+                                             uint32_t src) {
+  tag_t *src_tags = RTAG[src];
+  tagmap_setb(dst, src_tags[1]);
+  tagmap_setb(dst + 1, src_tags[0]);
+}
+
+void PIN_FAST_ANALYSIS_CALL r2m_xfer_opl_rev(THREADID tid, ADDRINT dst,
+                                             uint32_t src) {
+  tag_t *src_tags = RTAG[src];
+  for (size_t i = 0; i < 4; i++)
+    tagmap_setb(dst + (3 - i), src_tags[i]);
+}
+
+void PIN_FAST_ANALYSIS_CALL r2m_xfer_opq_rev(THREADID tid, ADDRINT dst,
+                                             uint32_t src) {
+  tag_t *src_tags = RTAG[src];
+  for (size_t i = 0; i < 8; i++)
+    tagmap_setb(dst + (7 - i), src_tags[i]);
+}
+
+void ins_movbe_op(INS ins) {
+  if (INS_OperandIsMemory(ins, OP_1)) {
+    REG reg_dst = INS_OperandReg(ins, OP_0);
+    if (REG_is_gr64(reg_dst)) {
+      M2R_CALL(m2r_xfer_opq_rev, reg_dst);
+    } else if (REG_is_gr32(reg_dst)) {
+      M2R_CALL(m2r_xfer_opl_rev, reg_dst);
+    } else if (REG_is_gr16(reg_dst)) {
+      M2R_CALL(m2r_xfer_opw_rev, reg_dst);
+    }
+  } else {
+    REG reg_src = INS_OperandReg(ins, OP_1);
+    if (REG_is_gr64(reg_src)) {
+      R2M_CALL(r2m_xfer_opq_rev, reg_src);
+    } else if (REG_is_gr32(reg_src)) {
+      R2M_CALL(r2m_xfer_opl_rev, reg_src);
+    } else if (REG_is_gr16(reg_src)) {
+      R2M_CALL(r2m_xfer_opw_rev, reg_src);
     }
   }
 }
