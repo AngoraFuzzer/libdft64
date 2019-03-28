@@ -136,3 +136,7 @@ pin -follow_execv -t ~/libdft/tools/nullpin.so -- <executable>
 [2]: http://nsl.cs.columbia.edu/papers/2012/tfa.ndss12.pdf
 [3]: https://arxiv.org/abs/1803.01307
 [4]: https://www.cs.vu.nl/~herbertb/download/papers/vuzzer_ndss17.pdf
+
+
+--------
+libdft64 is being developed by [ByteDance AI Lab](https://ailab.bytedance.com/) currently.
