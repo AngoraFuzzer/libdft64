@@ -12,14 +12,15 @@ These code is modified from [VUzzer64](https://github.com/vusec/vuzzer64), and i
 ## Limitation of our taint propagation rules
 - Byte level
 - Ignore implicit flows
-- Ignore flags registers
+- Ignore eflags registers
 
 ## TODO
 - [ ] ternary instructions
-- [ ] rules for flags registers 
 - [ ] performance optimization
 - [ ] support more instructions
 - [ ] test for each instruction
+- [ ] rules for eflags registers 
+- [ ] FPU instructions
 
 ## Contributing guidance
 As [TaintInduce](https://taintinduce.github.io/) mentioned, libdft exists the soundness and completeness probelm.
@@ -30,7 +31,7 @@ If you want to contribute to this, modify the instructions in `src/libdft_core.c
 
 ## Build 
 
-- Download Intel Pin 3.x and set PIN_ROOT to pin's directory.
+- Download Intel Pin 3.x and set PIN_ROOT to Pin's directory.
 
 ```sh
 PREFIX=/path-to-install ./install_pin.sh

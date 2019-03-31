@@ -19,5 +19,5 @@ RUN make
 COPY ./env.init /opt/
 
 VOLUME ["/data"]
-WORKDIR /
+WORKDIR /data
 ENTRYPOINT [ "/opt/env.init" ]
