@@ -2,7 +2,7 @@
 #ifndef __DEBUG_H__
 #define __DEBUG_H__
 
-#define DEBUG_INFO 0
+// #define DEBUG_INFO 1
 
 #ifdef DEBUG_INFO
 // #define DEBUG_PRINTF printf

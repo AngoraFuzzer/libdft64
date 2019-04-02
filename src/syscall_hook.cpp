@@ -96,7 +96,6 @@ static void post_read_hook(THREADID tid, syscall_ctx_t *ctx) {
 
   const int fd = ctx->arg[SYSCALL_ARG0];
   const ADDRINT buf = ctx->arg[SYSCALL_ARG1];
-  char *pbuf = (char *)buf;
   size_t count = ctx->arg[SYSCALL_ARG2];
 
   /* taint-source */
@@ -114,8 +113,8 @@ static void post_read_hook(THREADID tid, syscall_ctx_t *ctx) {
       read_off -= nr; // post
     }
 
-    LOGD("[read] fd: %d, addr: %p, offset: %d, size: %lu / %lu\n", fd, pbuf,
-         read_off, nr, count);
+    LOGD("[read] fd: %d, addr: %p, offset: %d, size: %lu / %lu\n", fd,
+         (char *)buf, read_off, nr, count);
 
     /* set the tag markings */
     // Attn: use count replace nr

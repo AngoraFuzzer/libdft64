@@ -1,3 +1,5 @@
+// TODO: support multiple thread
+
 #include "bdd_tag.h"
 #include "debug.h"
 #include <assert.h>

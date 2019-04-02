@@ -210,17 +210,6 @@ void ins_inspect(INS ins) {
   case XED_ICLASS_DIVSD:
     ins_binary_op(ins);
 
-    // TODO: ternary
-    // case XED_ICLASS_VMULSD:
-    // case XED_ICLASS_VDIVSD:
-    // case XED_ICLASS_VPXOR:
-
-    // case XED_ICLASS_VPSUBB:
-    // case XED_ICLASS_VPSUBW:
-    // case XED_ICLASS_VPSUBD:
-    // case XED_ICLASS_VPXORD:
-    // case XED_ICLASS_VPXORQ:
-
   // **** xfer ****
   case XED_ICLASS_BSF:
   case XED_ICLASS_BSR:
@@ -454,14 +443,29 @@ void ins_inspect(INS ins) {
   case XED_ICLASS_PMINUB:
   case XED_ICLASS_PSLLDQ:
   case XED_ICLASS_PSRLDQ:
-  case XED_ICLASS_VPOR:
-  case XED_ICLASS_VPXOR:
   case XED_ICLASS_VPCMPEQB:
   case XED_ICLASS_VPBROADCASTB:
   case XED_ICLASS_VZEROUPPER:
   case XED_ICLASS_BSWAP:
   case XED_ICLASS_UNPCKLPD:
   case XED_ICLASS_PSHUFB:
+  case XED_ICLASS_VPTEST:
+    // TODO: ternary
+  case XED_ICLASS_VMULSD:
+  case XED_ICLASS_VDIVSD:
+  case XED_ICLASS_VPOR:
+  case XED_ICLASS_VPXOR:
+  case XED_ICLASS_VPSUBB:
+  case XED_ICLASS_VPSUBW:
+  case XED_ICLASS_VPSUBD:
+  case XED_ICLASS_VPXORD:
+  case XED_ICLASS_VPXORQ:
+  case XED_ICLASS_VPAND:
+  case XED_ICLASS_VPANDN:
+  case XED_ICLASS_VPSLLDQ:
+  case XED_ICLASS_VPCMPGTB:
+  case XED_ICLASS_VPALIGNR:
+  case XED_ICLASS_VPCMPISTRI:
 
     break;
   case XED_ICLASS_CMP:
@@ -525,9 +529,9 @@ void ins_inspect(INS ins) {
   default:
     // https://intelxed.github.io/ref-manual/xed-extension-enum_8h.html#ae7b9f64cdf123c5fda22bd10d5db9916
     // INT32 num_op = INS_OperandCount(ins);
-    INT32 ins_ext = INS_Extension(ins);
+    // INT32 ins_ext = INS_Extension(ins);
     // if (ins_ext != 0 && ins_ext != 10)
-    LOGD("[uninstrumented] opcode=%d, ext=%d, %s \n", ins_indx, ins_ext,
+    LOGD("[uninstrumented] opcode=%d, %s\n", ins_indx,
          INS_Disassemble(ins).c_str());
     break;
   }
