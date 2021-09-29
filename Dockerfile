@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM ubuntu:20.04
 
 RUN apt-get update \
     && apt-get -y upgrade \
@@ -6,7 +6,7 @@ RUN apt-get update \
     && apt-get clean
 
 
-ENV PIN_TAR_NAME=pin-3.7-97619-g0d0c92f4f-gcc-linux
+ENV PIN_TAR_NAME=pin-3.20-98437-gf02b61307-gcc-linux
 ENV PIN_ROOT=/${PIN_TAR_NAME}
 
 RUN wget http://software.intel.com/sites/landingpage/pintool/downloads/${PIN_TAR_NAME}.tar.gz \

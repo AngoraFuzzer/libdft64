@@ -8,7 +8,6 @@ LIBDFT_SRC			= src
 LIBDFT_TOOL			= tools
 # LIBDFT_TAG_FLAGS	?= -DLIBDFT_TAG_TYPE=libdft_tag_uint8
 
-
 .PHONY: all
 all: dftsrc tool #test
 

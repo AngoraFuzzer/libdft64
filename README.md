@@ -2,6 +2,10 @@
 
 These code is modified from [VUzzer64](https://github.com/vusec/vuzzer64), and it is originally from [libdft](https://www.cs.columbia.edu/~vpk/research/libdft/).
 
+## News 
+- Update Pin version: pin-3.20-98437-gf02b61307-gcc-linux
+- Test in ubuntu 20.04
+
 ## Features
 
 - Support Intel Pin 3.x
@@ -138,6 +142,3 @@ pin -follow_execv -t ~/libdft/tools/nullpin.so -- <executable>
 [3]: https://arxiv.org/abs/1803.01307
 [4]: https://www.cs.vu.nl/~herbertb/download/papers/vuzzer_ndss17.pdf
 
-
---------
-libdft64 is being developed by [ByteDance AI Lab](https://ailab.bytedance.com/) currently.

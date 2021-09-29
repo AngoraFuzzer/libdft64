@@ -122,7 +122,7 @@ alert(ADDRINT ins, ADDRINT bt)
 	}
 	else
 		/* failed */
-		LOG(string(__func__) +
+		LOG(std::string(__func__) +
 			": failed while trying to open " +
 			logpath.Value().c_str() + " (" +
 			string(strerror(errno)) + ")\n");

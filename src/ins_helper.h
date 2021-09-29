@@ -361,4 +361,7 @@ inline size_t REG_INDX(REG reg) {
                  IARG_THREAD_ID, IARG_UINT32, REG_INDX(dst), IARG_UINT32,      \
                  REG_INDX(src1), IARG_UINT32, REG_INDX(src2), IARG_END)
 
+#define INS_MemoryWriteSize(isn) \
+  INS_MemoryOperandSize(ins, OP_0)
+
 #endif
