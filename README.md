@@ -51,6 +51,13 @@ docker build -t libdft ./
 docker run --privileged -v /path-to-dir:/data -it --rm libdft /bin/bash
 ```
 
+## Test
+See tools/mini_test.cpp & tools/track.cpp for more defails
+```
+cd tools;
+make test_mini
+```
+
 ## Introduction
    Dynamic data flow tracking (DFT) deals with the tagging and tracking of
 "interesting" data as they propagate during program execution. DFT has been
