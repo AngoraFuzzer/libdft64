@@ -87,15 +87,15 @@ and sinks, and customize the tag propagation policy. We have included three
 simple Pin tools inside the [`tools`](tools) subdirectory to aid the development of
 DFT-powered Pintools:
 
-  * [`nullpin`](tools/nullpin.c) is essentially a null tool
+  * [`nullpin`](tools/nullpin.cpp) is essentially a null tool
     that runs a process using Pin without any form of instrumentation or analysis.
     This tool can be used to measure the overhead imposed by Pin's runtime
     environment.
-  * [`libdft`](tools/libdft.c) uses libdft to apply DFT on the application being
+  * [`libdft`](tools/libdft.cpp) uses libdft to apply DFT on the application being
     executed, but does not use any of the API functions to define data sources and
     sinks (i.e., it does not customize the applied DFT).
     This tool can be used to evaluate the overhead imposed by libdft.
-  * [`libdft-dta`](tools/libdft-dta.c) is an example tool that uses the API
+  * [`libdft-dta`](tools/libdft-dta.cpp) is an example tool that uses the API
     of libdft, and serves as template for future meta-tools.
     In particular, it implements a dynamic taint analysis (DTA)
     platform by transparently utilizing DFT in unmodified x86 Linux binaries.
