@@ -118,12 +118,12 @@ the offending instruction and the contents of the instruction pointer EIP.
 
 ### Usage
    After building both libdft and the accompanying tools (i.e., `nullpin`,
-`libdft`, and `libdft-dta`), you can apply them directly in unmodified x86
+`libdft`, and `track`), you can apply them directly in unmodified x86
 Linux binaries as follows (assuming that you have added Pin's location to
 your `PATH`, and installed libdft in your home directory):
 
 ```shell
-pin -follow_execv -t ~/libdft/tools/nullpin.so -- <executable>
+pin -t obj-intel64/track.so -- obj-intel64/mini_test.exe  cur_input
 ```
 
 #### Arguments processed by Pin
