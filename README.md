@@ -95,10 +95,12 @@ DFT-powered Pintools:
     executed, but does not use any of the API functions to define data sources and
     sinks (i.e., it does not customize the applied DFT).
     This tool can be used to evaluate the overhead imposed by libdft.
-  * [`libdft-dta`](tools/libdft-dta.cpp) is an example tool that uses the API
+  * [`track`](tools/track.cpp) is an example tool that uses the API
     of libdft, and serves as template for future meta-tools.
     In particular, it implements a dynamic taint analysis (DTA)
     platform by transparently utilizing DFT in unmodified x86 Linux binaries.
+    The sources are arguemnts in `__libdft_set_taint`, and sinks are arguments 
+    in `__libdft_get_taint` and `__libdft_getval_taint`.
 
    DTA operates by tagging all data coming from the network as "tainted",
 tracking their propagation, and alerting the user when they are used in a way
