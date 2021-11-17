@@ -100,7 +100,9 @@ DFT-powered Pintools:
     In particular, it implements a dynamic taint analysis (DTA)
     platform by transparently utilizing DFT in unmodified x86 Linux binaries.
     The sources are arguemnts in `__libdft_set_taint`, and sinks are arguments 
-    in `__libdft_get_taint` and `__libdft_getval_taint`.
+    in `__libdft_get_taint` and `__libdft_getval_taint`. libdft64 is also used in Angora
+    for taint tracking. You can reading code at `https://github.com/AngoraFuzzer/Angora/tree/master/pin_mode`
+    as example.
 
    DTA operates by tagging all data coming from the network as "tainted",
 tracking their propagation, and alerting the user when they are used in a way
