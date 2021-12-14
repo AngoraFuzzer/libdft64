@@ -17,7 +17,7 @@ The simplest way to compile this package is:
   4. `cd` to the directory [`tools/`](tools) and type `make tools` to compile the
      accompanying tools (e.g., `nullpin`, `libdft`, `libdft-dta`, etc.).
   5. You can remove the program binaries and object files from [`src/`](src)
-     and [`tools/`](tools) by typing `make clean' on the respective directory.
+     and [`tools/`](tools) by typing `make clean` on the respective directory.
 
 ## Supported platforms
 libdft has been successfully tested with:
