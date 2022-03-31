@@ -44,6 +44,7 @@
 #include <stdlib.h>
 #include <set>
 #include <unistd.h>
+#include <linux/net.h>
 
 #include "branch_pred.h"
 #include "libdft_api.h"
