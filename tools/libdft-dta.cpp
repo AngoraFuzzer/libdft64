@@ -116,7 +116,7 @@ alert(ADDRINT ins, ADDRINT bt)
 		(void)fprintf(logfile, " ____ ____ ____ ____\n");
 		(void)fprintf(logfile, "||w |||o |||o |||t ||\n");
 		(void)fprintf(logfile, "||__|||__|||__|||__||\t");
-		(void)fprintf(logfile, "[%d]: 0x%08x --> 0x%08x\n",
+		(void)fprintf(logfile, "[%d]: 0x%08lx --> 0x%08lx\n",
 							getpid(), ins, bt);
 
 		(void)fprintf(logfile, "|/__\\|/__\\|/__\\|/__\\|\n");
