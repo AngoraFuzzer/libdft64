@@ -35,6 +35,10 @@
 
 #include "pin.H"
 
+#define VCPU_MASK32	0x0F			/* 32-bit VCPU mask */
+#define VCPU_MASK16	0x03			/* 16-bit VCPU mask */
+#define VCPU_MASK8	0x01			/* 8-bit VCPU mask */
+
 /* core API */
 void ins_inspect(INS);
 // FLAG_TYPE ct(TAG_TYPE, TAG_TYPE);
