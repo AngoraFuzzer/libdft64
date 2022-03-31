@@ -72,6 +72,20 @@ extern ins_desc_t ins_desc[XED_ICLASS_LAST];
 /* syscall descriptors */
 extern syscall_desc_t syscall_desc[SYSCALL_MAX];
 
+/* socket related syscalls */
+static int sock_syscalls[] = {
+	__NR_socket,
+	__NR_accept,
+	__NR_accept4,
+	__NR_getsockname,
+	__NR_getpeername,
+	__NR_socketpair,
+	__NR_recvfrom,
+	__NR_getsockopt,
+	__NR_recvmsg,
+	__NR_recvmmsg,
+};
+
 /* set of interesting descriptors (sockets) */
 static std::set<int> fdset;
 
@@ -454,11 +468,11 @@ post_socketcall_hook(THREADID tid, syscall_ctx_t *ctx)
 	size_t tot;
 	
 	/* socket call arguments */
-	unsigned long *args = (unsigned long *)ctx->arg[SYSCALL_ARG1];
+	unsigned long *args = (unsigned long *)ctx->arg[SYSCALL_ARG0];
 
 	/* demultiplex the socketcall */
-	switch ((int)ctx->arg[SYSCALL_ARG0]) {
-		case SYS_SOCKET:
+	switch (ctx->nr) {
+		case __NR_socket:
 			/* not successful; optimized branch */
 			if (unlikely((long)ctx->ret < 0))
 				return;
@@ -474,8 +488,8 @@ post_socketcall_hook(THREADID tid, syscall_ctx_t *ctx)
 
 			/* done */
 			break;
-		case SYS_ACCEPT:
-		case SYS_ACCEPT4:
+		case __NR_accept:
+		case __NR_accept4:
 			/* not successful; optimized branch */
 			if (unlikely((long)ctx->ret < 0))
 				return;
@@ -488,8 +502,8 @@ post_socketcall_hook(THREADID tid, syscall_ctx_t *ctx)
 						fdset.end()))
 				/* add the descriptor to the monitored set */
 				fdset.insert((int)ctx->ret);
-		case SYS_GETSOCKNAME:
-		case SYS_GETPEERNAME:
+		case __NR_getsockname:
+		case __NR_getpeername:
 			/* not successful; optimized branch */
 			if (unlikely((long)ctx->ret < 0))
 				return;
@@ -504,7 +518,7 @@ post_socketcall_hook(THREADID tid, syscall_ctx_t *ctx)
 				tagmap_clrn(args[SYSCALL_ARG2], sizeof(int));
 			}
 			break;
-		case SYS_SOCKETPAIR:
+		case __NR_socketpair:
 			/* not successful; optimized branch */
 			if (unlikely((long)ctx->ret < 0))
 				return;
@@ -512,23 +526,7 @@ post_socketcall_hook(THREADID tid, syscall_ctx_t *ctx)
 			/* clear the tag bits */
 			tagmap_clrn(args[SYSCALL_ARG3], (sizeof(int) * 2));
 			break;
-		case SYS_RECV:
-			/* not successful; optimized branch */
-			if (unlikely((long)ctx->ret <= 0))
-				return;
-			
-			/* taint-source */	
-			if (fdset.find((int)args[SYSCALL_ARG0]) != fdset.end())
-				/* set the tag markings */
-				tagmap_setn(args[SYSCALL_ARG1],
-							(size_t)ctx->ret,
-							dta_tag);
-			else
-				/* clear the tag markings */
-				tagmap_clrn(args[SYSCALL_ARG1],
-							(size_t)ctx->ret);
-			break;
-		case SYS_RECVFROM:
+		case __NR_recvfrom:
 			/* not successful; optimized branch */
 			if (unlikely((long)ctx->ret <= 0))
 				return;
@@ -554,7 +552,7 @@ post_socketcall_hook(THREADID tid, syscall_ctx_t *ctx)
 				tagmap_clrn(args[SYSCALL_ARG5], sizeof(int));
 			}
 			break;
-		case SYS_GETSOCKOPT:
+		case __NR_getsockopt:
 			/* not successful; optimized branch */
 			if (unlikely((long)ctx->ret < 0))
 				return;
@@ -566,7 +564,7 @@ post_socketcall_hook(THREADID tid, syscall_ctx_t *ctx)
 			/* clear the tag bits */
 			tagmap_clrn(args[SYSCALL_ARG4], sizeof(int));
 			break;
-		case SYS_RECVMSG:
+		case __NR_recvmsg:
 			/* not successful; optimized branch */
 			if (unlikely((long)ctx->ret <= 0))
 				return;
@@ -638,7 +636,7 @@ post_socketcall_hook(THREADID tid, syscall_ctx_t *ctx)
 			}
 			break;
 #if LINUX_KERNEL >= 2633
-		case SYS_RECVMMSG:
+		case __NR_recvmmsg:
 #endif
 		default:
 			/* nothing to do */
@@ -784,8 +782,9 @@ main(int argc, char **argv)
 
 	/* socket(2), accept(2), recv(2), recvfrom(2), recvmsg(2) */
 	if (net.Value() != 0)
-		(void)syscall_set_post(&syscall_desc[__NR_socketcall],
-			post_socketcall_hook);
+		for (int sock_nr : sock_syscalls)
+			(void)syscall_set_post(&syscall_desc[sock_nr],
+				post_socketcall_hook);
 
 	/* dup(2), dup2(2) */
 	(void)syscall_set_post(&syscall_desc[__NR_dup], post_dup_hook);
