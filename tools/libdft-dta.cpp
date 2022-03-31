@@ -245,7 +245,7 @@ dta_instrument_jmp_call(INS ins)
 					(AFUNPTR)assert_reg32,
 					IARG_FAST_ANALYSIS_CALL,
 					IARG_REG_VALUE, thread_ctx_ptr,
-					IARG_UINT32, REG32_INDX(reg),
+					IARG_UINT32, REG_INDX(reg),
 					IARG_REG_VALUE, reg,
 					IARG_END);
 			else
@@ -259,7 +259,7 @@ dta_instrument_jmp_call(INS ins)
 					(AFUNPTR)assert_reg16,
 					IARG_FAST_ANALYSIS_CALL,
 					IARG_REG_VALUE, thread_ctx_ptr,
-					IARG_UINT32, REG16_INDX(reg),
+					IARG_UINT32, REG_INDX(reg),
 					IARG_REG_VALUE, reg,
 					IARG_END);
 		}
