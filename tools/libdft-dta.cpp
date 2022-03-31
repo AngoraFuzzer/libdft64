@@ -74,6 +74,9 @@ extern syscall_desc_t syscall_desc[SYSCALL_MAX];
 /* set of interesting descriptors (sockets) */
 static std::set<int> fdset;
 
+/* the tag value used for tainting */
+static tag_traits<tag_t>::type dta_tag = 1;
+
 /* log file path (auditing) */
 static KNOB<std::string> logpath(KNOB_MODE_WRITEONCE, "pintool", "l",
 		LOGFILE_DFL, "");
@@ -370,7 +373,7 @@ post_read_hook(THREADID tid, syscall_ctx_t *ctx)
 	/* taint-source */
 	if (fdset.find(ctx->arg[SYSCALL_ARG0]) != fdset.end())
         	/* set the tag markings */
-	        tagmap_setn(ctx->arg[SYSCALL_ARG1], (size_t)ctx->ret);
+	        tagmap_setn(ctx->arg[SYSCALL_ARG1], (size_t)ctx->ret, dta_tag);
 	else
         	/* clear the tag markings */
 	        tagmap_clrn(ctx->arg[SYSCALL_ARG1], (size_t)ctx->ret);
@@ -412,7 +415,7 @@ post_readv_hook(THREADID tid, syscall_ctx_t *ctx)
 		/* taint interesting data and zero everything else */	
 		if (it != fdset.end())
                 	/* set the tag markings */
-                	tagmap_setn((size_t)iov->iov_base, iov_tot);
+                	tagmap_setn((size_t)iov->iov_base, iov_tot, dta_tag);
 		else
                 	/* clear the tag markings */
                 	tagmap_clrn((size_t)iov->iov_base, iov_tot);
@@ -518,7 +521,8 @@ post_socketcall_hook(THREADID tid, syscall_ctx_t *ctx)
 			if (fdset.find((int)args[SYSCALL_ARG0]) != fdset.end())
 				/* set the tag markings */
 				tagmap_setn(args[SYSCALL_ARG1],
-							(size_t)ctx->ret);
+							(size_t)ctx->ret,
+							dta_tag);
 			else
 				/* clear the tag markings */
 				tagmap_clrn(args[SYSCALL_ARG1],
@@ -533,7 +537,8 @@ post_socketcall_hook(THREADID tid, syscall_ctx_t *ctx)
 			if (fdset.find((int)args[SYSCALL_ARG0]) != fdset.end())
 				/* set the tag markings */
 				tagmap_setn(args[SYSCALL_ARG1],
-						(size_t)ctx->ret);
+						(size_t)ctx->ret,
+						dta_tag);
 			else
 				/* clear the tag markings */
 				tagmap_clrn(args[SYSCALL_ARG1],
@@ -589,7 +594,8 @@ post_socketcall_hook(THREADID tid, syscall_ctx_t *ctx)
 				if (it != fdset.end())
 					/* set the tag markings */
 					tagmap_setn((size_t)msg->msg_control,
-						msg->msg_controllen);
+						msg->msg_controllen,
+						dta_tag);
 					
 				else
 					/* clear the tag markings */
@@ -620,7 +626,8 @@ post_socketcall_hook(THREADID tid, syscall_ctx_t *ctx)
 				if (it != fdset.end())
 					/* set the tag markings */
 					tagmap_setn((size_t)iov->iov_base,
-								iov_tot);
+								iov_tot,
+								dta_tag);
 				else
 					/* clear the tag markings */
 					tagmap_clrn((size_t)iov->iov_base,
