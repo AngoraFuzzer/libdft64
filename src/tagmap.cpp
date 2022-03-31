@@ -114,6 +114,10 @@ tag_t tagmap_getb_reg(THREADID tid, unsigned int reg_idx, unsigned int off) {
   return threads_ctx[tid].vcpu.gpr[reg_idx][off];
 }
 
+tag_t tagmap_getw(ADDRINT addr) { return tagmap_getn(addr, sizeof(uint16_t)); }
+
+tag_t tagmap_getl(ADDRINT addr) { return tagmap_getn(addr, sizeof(uint32_t)); }
+
 void PIN_FAST_ANALYSIS_CALL tagmap_clrb(ADDRINT addr) {
   tagmap_setb(addr, tag_traits<tag_t>::cleared_val);
 }
