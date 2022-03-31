@@ -125,6 +125,13 @@ void PIN_FAST_ANALYSIS_CALL tagmap_clrn(ADDRINT addr, UINT32 n) {
   }
 }
 
+void PIN_FAST_ANALYSIS_CALL tagmap_setn(ADDRINT addr, UINT32 n, tag_t const &tag) {
+  ADDRINT i;
+  for (i = addr; i < addr + n; i++) {
+    tagmap_setb(i, tag);
+  }
+}
+
 tag_t tagmap_getn(ADDRINT addr, unsigned int n) {
   tag_t ts = tag_traits<tag_t>::cleared_val;
   for (size_t i = 0; i < n; i++) {
