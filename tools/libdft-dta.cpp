@@ -72,10 +72,10 @@ extern ins_desc_t ins_desc[XED_ICLASS_LAST];
 extern syscall_desc_t syscall_desc[SYSCALL_MAX];
 
 /* set of interesting descriptors (sockets) */
-static set<int> fdset;
+static std::set<int> fdset;
 
 /* log file path (auditing) */
-static KNOB<string> logpath(KNOB_MODE_WRITEONCE, "pintool", "l",
+static KNOB<std::string> logpath(KNOB_MODE_WRITEONCE, "pintool", "l",
 		LOGFILE_DFL, "");
 
 /*
@@ -125,7 +125,7 @@ alert(ADDRINT ins, ADDRINT bt)
 		LOG(std::string(__func__) +
 			": failed while trying to open " +
 			logpath.Value().c_str() + " (" +
-			string(strerror(errno)) + ")\n");
+			std::string(strerror(errno)) + ")\n");
 
 	/* terminate */
 	exit(EXIT_FAILURE);
@@ -385,7 +385,7 @@ post_readv_hook(syscall_ctx_t *ctx)
 	/* iterators */
 	int i;
 	struct iovec *iov;
-	set<int>::iterator it;
+	std::set<int>::iterator it;
 
 	/* bytes copied in a iovec structure */
 	size_t iov_tot;
@@ -445,7 +445,7 @@ post_socketcall_hook(syscall_ctx_t *ctx)
 	/* iterators */
 	size_t i;
 	struct iovec *iov;
-	set<int>::iterator it;
+	std::set<int>::iterator it;
 	
 	/* total bytes received */
 	size_t tot;
@@ -672,7 +672,7 @@ static void
 post_close_hook(syscall_ctx_t *ctx)
 {
 	/* iterator */
-	set<int>::iterator it;
+	std::set<int>::iterator it;
 
 	/* not successful; optimized branch */
 	if (unlikely((long)ctx->ret < 0))
