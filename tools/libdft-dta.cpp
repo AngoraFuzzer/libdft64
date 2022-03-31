@@ -152,7 +152,7 @@ assert_reg32(thread_ctx_t *thread_ctx, uint32_t reg, uint32_t addr)
 	 * combine the register tag along with the tag
 	 * markings of the target address
 	 */
-	return thread_ctx->vcpu.gpr[reg] | tagmap_getl(addr);
+	return tag_combine(thread_ctx->vcpu.gpr[reg][0], tagmap_getl(addr));
 }
 
 /*
@@ -172,8 +172,7 @@ assert_reg16(thread_ctx_t *thread_ctx, uint32_t reg, uint32_t addr)
 	 * combine the register tag along with the tag
 	 * markings of the target address
 	 */
-	return (thread_ctx->vcpu.gpr[reg] & VCPU_MASK16)
-		| tagmap_getw(addr);
+	return tag_combine(thread_ctx->vcpu.gpr[reg][0] & VCPU_MASK16, tagmap_getw(addr));
 }
 
 /*
