@@ -80,9 +80,12 @@ void tagmap_setb_reg(THREADID tid, unsigned int reg_idx, unsigned int off,
                      tag_t const &tag);
 tag_t tagmap_getb(ADDRINT addr);
 tag_t tagmap_getb_reg(THREADID tid, unsigned int reg_idx, unsigned int off);
+tag_t tagmap_getw(ADDRINT addr);
+tag_t tagmap_getl(ADDRINT addr);
 tag_t tagmap_getn(ADDRINT addr, unsigned int size);
 tag_t tagmap_getn_reg(THREADID tid, unsigned int reg_idx, unsigned int n);
 void tagmap_clrb(ADDRINT addr);
 void tagmap_clrn(ADDRINT, UINT32);
+void tagmap_setn(ADDRINT addr, UINT32 n, tag_t const &tag);
 
 #endif /* __TAGMAP_H__ */

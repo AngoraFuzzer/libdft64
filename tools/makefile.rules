@@ -54,14 +54,14 @@ LIB_ROOTS :=
 
 # Place ia32-specific definitions here if they apply to all supported operating systems.
 ifeq ($(TARGET),ia32)
-    TOOL_CXXFLAGS += -m32 
+    TOOL_CXXFLAGS += -m32 -Wno-deprecated-declarations
     LIBDFT_INC_PATH	= $(realpath ../src32/)
     LIBDFT_PATH	= $(realpath ../src32/obj-ia32/)
 endif
 
 # Place intel64-specific definitions here if they apply to all supported operating systems.
 ifeq ($(TARGET),intel64)
-	TOOL_CXXFLAGS +=
+	TOOL_CXXFLAGS += -Wno-deprecated-declarations
     LIBDFT_INC_PATH	= $(realpath ../src/)
     LIBDFT_PATH	= $(realpath ../src/obj-intel64/)
 endif
