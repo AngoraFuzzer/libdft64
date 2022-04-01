@@ -53,7 +53,11 @@ inline void tag_dir_setb(tag_dir_t &dir, ADDRINT addr, tag_t const &tag) {
   // LOG("Setting tag "+hexstr(addr)+"\n");
   if (dir.table[VIRT2PAGETABLE(addr)] == NULL) {
     //  LOG("No tag table for "+hexstr(addr)+" allocating new table\n");
+#ifndef _WIN32
     tag_table_t *new_table = new (std::nothrow) tag_table_t();
+#else // _WIN32
+    tag_table_t *new_table = new tag_table_t();
+#endif
     if (new_table == NULL) {
       LOG("Failed to allocate tag table!\n");
       libdft_die();
@@ -64,7 +68,11 @@ inline void tag_dir_setb(tag_dir_t &dir, ADDRINT addr, tag_t const &tag) {
   tag_table_t *table = dir.table[VIRT2PAGETABLE(addr)];
   if ((*table).page[VIRT2PAGE(addr)] == NULL) {
     //    LOG("No tag page for "+hexstr(addr)+" allocating new page\n");
+#ifndef _WIN32
     tag_page_t *new_page = new (std::nothrow) tag_page_t();
+#else // _WIN32
+    tag_page_t *new_page = new tag_page_t();
+#endif
     if (new_page == NULL) {
       LOG("Failed to allocate tag page!\n");
       libdft_die();
