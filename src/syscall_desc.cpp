@@ -3,6 +3,7 @@
 #include "syscall_struct.h"
 #include "tagmap.h"
 
+#ifdef __linux__
 #include <sys/epoll.h>
 #include <sys/ioctl.h>
 #include <sys/ipc.h>
@@ -22,6 +23,7 @@
 #include <linux/kexec.h>
 #include <linux/mempolicy.h>
 #include <linux/sysctl.h>
+#endif // __linux__
 
 #include <err.h>
 #include <poll.h>
@@ -66,6 +68,7 @@ static void post_msgctl_hook(THREADID tid, syscall_ctx_t *ctx);
 
 /* syscall descriptors */
 syscall_desc_t syscall_desc[SYSCALL_MAX] = {
+#ifdef __linux__
     /* __NR_read = 0 */
     {3, 1, 0, {0, 0, 0, 0, 0, 0}, NULL, post_read_hook},
     /* __NR_write = 1 */
@@ -768,6 +771,7 @@ syscall_desc_t syscall_desc[SYSCALL_MAX] = {
     /* __NR_statx 332 */
     /* __NR_io_pgetevents 333 */
     /* __NR_rseq 334 */
+#endif // __linux__
 };
 
 /*
@@ -870,6 +874,7 @@ int syscall_clr_post(syscall_desc_t *desc) {
   return 0;
 }
 
+#ifdef __linux__
 /* __NR_(p)read(64) and __NR_readlink post syscall hook */
 static void post_read_hook(THREADID tid, syscall_ctx_t *ctx) {
   /* read()/readlink() was not successful; optimized branch */
@@ -1543,3 +1548,4 @@ static void post_recvmsg_hook(THREADID tid, syscall_ctx_t *ctx) {
     tot -= iov_tot;
   }
 }
+#endif // __linux__
