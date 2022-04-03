@@ -528,6 +528,11 @@ void ins_inspect(INS ins) {
   case XED_ICLASS_NOT:
   case XED_ICLASS_NOP:
   case XED_ICLASS_BT:
+  case XED_ICLASS_BTS:
+  case XED_ICLASS_BTS_LOCK:
+  case XED_ICLASS_BTR:
+  case XED_ICLASS_BTR_LOCK:
+  case XED_ICLASS_BTC:
   case XED_ICLASS_DEC:
   case XED_ICLASS_DEC_LOCK:
   case XED_ICLASS_INC:
