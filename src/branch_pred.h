@@ -34,7 +34,7 @@
 #define __BRANCH_PRED_H__
 
 /* compiler directives for branch prediction */
-#define likely(x)       __builtin_expect((x), 1)
-#define unlikely(x)     __builtin_expect((x), 0)
+#define likely(x)       __builtin_expect(!!(x), true)
+#define unlikely(x)     __builtin_expect(!!(x), false)
 
 #endif /* __BRANCH_PRED_H__ */
