@@ -436,6 +436,9 @@ void ins_inspect(INS ins) {
   case XED_ICLASS_PCMPEQB:
     ins_binary_op(ins);
     break;
+  case XED_ICLASS_FNSTCW:
+    M_CLEAR_N(2);
+    break;
     // TODO
   case XED_ICLASS_XGETBV:
   case XED_ICLASS_PMOVMSKB:
