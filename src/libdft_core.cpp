@@ -528,6 +528,7 @@ void ins_inspect(INS ins) {
   case XED_ICLASS_XSAVEC:
   case XED_ICLASS_XRSTOR:
   case XED_ICLASS_PAUSE:
+  case XED_ICLASS_LFENCE:
     break;
 
   default:
