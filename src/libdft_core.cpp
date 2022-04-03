@@ -338,6 +338,7 @@ void ins_inspect(INS ins) {
     ins_clear_op(ins);
     break;
   case XED_ICLASS_RDPID:
+  case XED_ICLASS_RDRAND:
     ins_clear_op(ins);
     break;
   case XED_ICLASS_RDPMC:
