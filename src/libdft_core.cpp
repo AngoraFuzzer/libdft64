@@ -504,6 +504,8 @@ void ins_inspect(INS ins) {
   case XED_ICLASS_JNS:
   case XED_ICLASS_JP:
   case XED_ICLASS_JNP:
+  case XED_ICLASS_JO:
+  case XED_ICLASS_JNO:
   case XED_ICLASS_RET_FAR:
   case XED_ICLASS_RET_NEAR:
   case XED_ICLASS_CALL_FAR:
