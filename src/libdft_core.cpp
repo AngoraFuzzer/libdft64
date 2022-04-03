@@ -173,6 +173,7 @@ void ins_inspect(INS ins) {
   case XED_ICLASS_ADDSS:
   case XED_ICLASS_AND:
   case XED_ICLASS_OR:
+  case XED_ICLASS_OR_LOCK:
   case XED_ICLASS_POR:
     ins_binary_op(ins);
     break;
