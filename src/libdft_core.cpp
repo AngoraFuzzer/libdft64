@@ -172,7 +172,9 @@ void ins_inspect(INS ins) {
   case XED_ICLASS_ADDSD:
   case XED_ICLASS_ADDSS:
   case XED_ICLASS_AND:
+  case XED_ICLASS_AND_LOCK:
   case XED_ICLASS_OR:
+  case XED_ICLASS_OR_LOCK:
   case XED_ICLASS_POR:
     ins_binary_op(ins);
     break;
@@ -337,6 +339,10 @@ void ins_inspect(INS ins) {
   case XED_ICLASS_LAR:
     ins_clear_op(ins);
     break;
+  case XED_ICLASS_RDPID:
+  case XED_ICLASS_RDRAND:
+    ins_clear_op(ins);
+    break;
   case XED_ICLASS_RDPMC:
   case XED_ICLASS_RDTSC:
     ins_clear_op_l2(ins);
@@ -433,6 +439,9 @@ void ins_inspect(INS ins) {
   case XED_ICLASS_PCMPEQB:
     ins_binary_op(ins);
     break;
+  case XED_ICLASS_FNSTCW:
+    M_CLEAR_N(2);
+    break;
     // TODO
   case XED_ICLASS_XGETBV:
   case XED_ICLASS_PMOVMSKB:
@@ -498,6 +507,8 @@ void ins_inspect(INS ins) {
   case XED_ICLASS_JNS:
   case XED_ICLASS_JP:
   case XED_ICLASS_JNP:
+  case XED_ICLASS_JO:
+  case XED_ICLASS_JNO:
   case XED_ICLASS_RET_FAR:
   case XED_ICLASS_RET_NEAR:
   case XED_ICLASS_CALL_FAR:
@@ -518,12 +529,20 @@ void ins_inspect(INS ins) {
   case XED_ICLASS_NOT:
   case XED_ICLASS_NOP:
   case XED_ICLASS_BT:
+  case XED_ICLASS_BTS:
+  case XED_ICLASS_BTS_LOCK:
+  case XED_ICLASS_BTR:
+  case XED_ICLASS_BTR_LOCK:
+  case XED_ICLASS_BTC:
   case XED_ICLASS_DEC:
   case XED_ICLASS_DEC_LOCK:
   case XED_ICLASS_INC:
   case XED_ICLASS_INC_LOCK:
   case XED_ICLASS_XSAVEC:
   case XED_ICLASS_XRSTOR:
+  case XED_ICLASS_PAUSE:
+  case XED_ICLASS_LFENCE:
+  case XED_ICLASS_PREFETCHW:
     break;
 
   default:
