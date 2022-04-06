@@ -19,6 +19,15 @@ The simplest way to compile this package is:
   5. You can remove the program binaries and object files from [`src/`](src)
      and [`tools/`](tools) by typing `make clean` on the respective directory.
 
+## Steps for compiling libdft on Windows
+
+  1. Open a PowerShell console and run `install_pin.ps1` to download and install Pin.
+  2. Set `$PIN_ROOT` based on the output of the script.
+  3. Install [Chocolatery](https://chocolatey.org/): `Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))`
+  4. Install GNU Make for Windows: `choco install make`
+  5. `cd` to the directory [`src/`](src), which contains the source code of libdft,
+     and type `make` to compile the package (i.e., the libdft library)
+
 ## Supported platforms
 libdft has been successfully tested with:
 
