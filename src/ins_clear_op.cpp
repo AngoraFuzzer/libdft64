@@ -53,7 +53,7 @@ static void PIN_FAST_ANALYSIS_CALL r_clrx(THREADID tid, uint32_t reg) {
 }
 
 static void PIN_FAST_ANALYSIS_CALL r_clry(THREADID tid, uint32_t reg) {
-  for (size_t i = 0; i < 16; i++) {
+  for (size_t i = 0; i < 32; i++) {
     RTAG[reg][i] = tag_traits<tag_t>::cleared_val;
   }
 }

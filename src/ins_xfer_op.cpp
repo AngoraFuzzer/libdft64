@@ -264,13 +264,13 @@ static void PIN_FAST_ANALYSIS_CALL r2m_xfer_opqn(THREADID tid, ADDRINT dst,
   tag_t src_tag[] = R64TAG(DFT_REG_RAX);
   if (likely(EFLAGS_DF(eflags) == 0)) {
     /* EFLAGS.DF = 0 */
-    for (size_t i = 0; i < (count << 2); i++) {
+    for (size_t i = 0; i < (count << 3); i++) {
       tagmap_setb(dst + i, src_tag[i % 8]);
     }
   } else {
     /* EFLAGS.DF = 1 */
-    for (size_t i = 0; i < (count << 2); i++) {
-      size_t dst_addr = dst - (count << 2) + 1 + i;
+    for (size_t i = 0; i < (count << 3); i++) {
+      size_t dst_addr = dst - (count << 3) + 1 + i;
       tagmap_setb(dst_addr, src_tag[i % 8]);
     }
   }
